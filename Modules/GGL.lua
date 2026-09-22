@@ -18,6 +18,11 @@ local RH = RubimRH
 --   passive 30x30 @ 150,0   defensive texture
 --   TargetColor 1x1 @ 737,-12  named "TargetColor"  (heal-unit UC color)
 --
+-- Heals/buffs: ExtraIcon GGL clicks ST and presses the matching bar key.
+-- Put the NextCast macro (Modules/Macros.lua) on that slot via
+-- /nc → Macros → PLACE ON BAR so the press is [@player]/[@partyN], not
+-- the raw spell on the current enemy.
+--
 -- Contrast / gamma / nameplate CVars are NOT touched.
 
 local CYAN_ON = { 0, 1, 1, 1 }

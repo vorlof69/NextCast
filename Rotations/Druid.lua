@@ -261,23 +261,23 @@ RubimRH.Rotation.SetAPL(11, function()
         return P:Buff("Mark of the Wild") ~= false
     end
 
-    -- MotW cannot be cast in Bear. Wait until combat has been over for 6s
-    -- and there is no live target, then drop ONCE, buff yourself, shift back.
-    -- RecentlyBuffed (5 min) stops the every-kill human flash.
+    -- MotW cannot be cast in Bear. GGLoader presses the NC MotW macro
+    -- (/cancelform then [@player]) so we only PAINT the icon — we do not
+    -- toggle Bear ourselves. After it lands, shift back.
     if
-        shapeshifted
+        db.maintainBuffs ~= false
         and oocSettled
         and not RH.ValidTarget()
-        and db.maintainBuffs ~= false
         and not markUp()
         and S.Mark:IsAvailable()
+        and RH.Ready(S.Mark)
     then
-        local formSpell = cat and S.Cat or S.Bear
-        if formSpell:IsAvailable() and RH.Ready(formSpell) then
-            HeroLib.State.druidReturnToForm = formSpell
-            RH.NoteShift("leave", formSpell)
-            return formSpell:Cast()
+        if shapeshifted then
+            HeroLib.State.druidReturnToForm = cat and S.Cat or S.Bear
         end
+        RH.healTarget = "player"
+        RH.NoteBuff("player", "Mark of the Wild", 300)
+        return S.Mark:Cast()
     end
 
     if db.maintainBuffs ~= false and not shapeshifted then

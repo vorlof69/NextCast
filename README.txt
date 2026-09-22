@@ -1,4 +1,4 @@
-NextCast 5.9.3 — WoW Forever 1–30
+NextCast 5.11.0 — WoW Forever 1–30
 =================================
 
 Install
@@ -7,24 +7,30 @@ Install
   3. Type /nc  (or /nextcast)
 
 Settings
-  Two tabs. Overview: spec, DPS/Tank/Healer/PvP, four switches.
-  Abilities: turn a spell off to never recommend it. The engine
-  fills in combo points, rage, HoTs, and DoTs from spec and level.
+  Three tabs. Overview: spec + switches. Abilities: turn a spell off.
+  Macros: GGLoader MetaEngine — CREATE ALL then PLACE ON BAR.
 
 Attack
   Bind Attack on the bar GGLoader scans. NextCast pulses it once, then
   hides it (Action's not Player:IsAttacking() gate) so the toggle cannot
   flip off. No extra StartAttack macro.
 
-Heals
-  GGLoader presses your bind with the current target. NextCast snaps the
-  injured ally onto target, paints the heal, then TargetLastEnemy after
-  the cast. It also writes #showtooltip macros (NC FlashHeal, NC MotW, …)
-  onto the same bar slots as those spells:
+Heals / buffs (MetaEngine)
+  GGLoader clicks the ExtraIcon texture and presses that bar key. If the
+  key is the raw spell, heals hit the enemy and MotW never leaves Bear.
+  Open /nc → Macros:
 
-    /cast [@mouseover,help,nodead][@target,help,nodead][@player] SPELL
+    CREATE ALL     writes NC MotW, NC HT, NC FlashHeal, …
+    PLACE ON BAR   replaces the matching spell on the scanned bar
+                   (needs a click — WoW blocks PlaceAction on login)
+    UNIT           cycle smart / @player / @mouseover / @party1–4
+                   (Action slots 6–10 are these unit macros)
 
-  Mouseover heals is on by default.
+  MotW / Thorns macros are /cancelform then [@player]. The addon paints
+  the icon in Bear; it does not dump form itself. After MotW lands it
+  shifts back.
+
+  smart = [@mouseover,help,nodead][@target,help,nodead][@player]
 
 ExtraIcon protocol (no TellMeWhen, no Rubim ExtraIcon addon)
   NextCast draws GriphRotations' ExtraIcon strip itself so an existing
@@ -50,6 +56,7 @@ ExtraIcon protocol (no TellMeWhen, no Rubim ExtraIcon addon)
 
 Commands
   /nc            dashboard
+  /nc macros     MetaEngine tab
   /nc cd         cooldowns
   /nc aoe        cycle auto / single / aoe
   /nc kick       interrupts
