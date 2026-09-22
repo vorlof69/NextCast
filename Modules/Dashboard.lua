@@ -30,86 +30,108 @@ frame:EnableMouse(true)
 frame:RegisterForDrag("LeftButton")
 frame:SetScript("OnDragStart", frame.StartMoving)
 frame:Hide()
-frame:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-frame:SetBackdropColor(0.038, 0.041, 0.048, 0.98)
-frame:SetBackdropBorderColor(0.14, 0.15, 0.17, 1)
-local shadow = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
-shadow:SetTexture(WHITE)
-shadow:SetPoint("TOPLEFT", -12, 12)
-shadow:SetPoint("BOTTOMRIGHT", 12, -12)
-shadow:SetColorTexture(0, 0, 0, 0.5)
-
-local header = frame:CreateTexture(nil, "BACKGROUND")
-header:SetTexture(WHITE)
-header:SetPoint("TOPLEFT", 1, -1)
-header:SetPoint("TOPRIGHT", -1, -1)
-header:SetHeight(56)
-header:SetColorTexture(0.048, 0.052, 0.062, 1)
+do
+    local gold = {
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 },
+    }
+    if not pcall(frame.SetBackdrop, frame, gold) then
+        gold.bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background"
+        gold.edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border"
+        frame:SetBackdrop(gold)
+    end
+    frame:SetBackdropColor(0, 0, 0, 1)
+    frame:SetBackdropBorderColor(1, 1, 1, 1)
+end
+local titlebg = frame:CreateTexture(nil, "BORDER")
+titlebg:SetTexture("Interface\\PaperDollInfoFrame\\UI-GearManager-Title-Background")
+if not titlebg:GetTexture() then
+    titlebg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
+end
+titlebg:SetPoint("TOPLEFT", 9, -6)
+titlebg:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -28, -24)
 local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
 local crest = frame:CreateTexture(nil, "ARTWORK")
-crest:SetSize(32, 32)
-crest:SetPoint("TOPLEFT", 16, -12)
+crest:SetSize(26, 26)
+crest:SetPoint("TOPLEFT", 16, -8)
 crest:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
 if coords then
     local dx = (coords[2] - coords[1]) * 0.22
     local dy = (coords[4] - coords[3]) * 0.22
     crest:SetTexCoord(coords[1] + dx, coords[2] - dx, coords[3] + dy, coords[4] - dy)
 end
-local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-title:SetPoint("TOPLEFT", 60, -12)
+local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+title:SetPoint("LEFT", crest, "RIGHT", 8, 0)
 title:SetText("NextCast")
-title:SetTextColor(0.94, 0.94, 0.92)
 local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
-subtitle:SetTextColor(0.52, 0.54, 0.58)
+subtitle:SetPoint("LEFT", title, "RIGHT", 10, 0)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-close:SetPoint("TOPRIGHT", -2, -4)
-local accent = frame:CreateTexture(nil, "ARTWORK")
-accent:SetTexture(WHITE)
-accent:SetPoint("TOPLEFT", 1, -57)
-accent:SetPoint("TOPRIGHT", -1, -57)
-accent:SetHeight(2)
-accent:SetColorTexture(color.r * 0.55, color.g * 0.55, color.b * 0.55, 1)
+close:SetPoint("TOPRIGHT", 2, 1)
 
 local function skinButton(parent, w, h, label)
     local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
     b:SetSize(w, h)
-    b:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    b:SetBackdropColor(0.07, 0.075, 0.085, 1)
-    b:SetBackdropBorderColor(0.18, 0.19, 0.21, 1)
-    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    b:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = 12,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    })
+    b:SetBackdropColor(0, 0, 0, 0.55)
+    b:SetBackdropBorderColor(0.75, 0.6, 0.22, 1)
+    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     b.text:SetPoint("CENTER")
     b.text:SetText(label or "")
     b:SetScript("OnEnter", function(s)
-        s:SetBackdropColor(0.10, 0.11, 0.13, 1)
-        s:SetBackdropBorderColor(color.r * 0.55, color.g * 0.55, color.b * 0.55, 1)
+        s:SetBackdropBorderColor(1, 0.82, 0.2, 1)
+        s.text:SetTextColor(1, 0.94, 0.55)
     end)
     b:SetScript("OnLeave", function(s)
+        s:SetBackdropBorderColor(0.75, 0.6, 0.22, 1)
         if not s.held then
-            s:SetBackdropColor(0.07, 0.075, 0.085, 1)
-            s:SetBackdropBorderColor(0.18, 0.19, 0.21, 1)
+            s.text:SetTextColor(1, 0.82, 0)
         end
     end)
     return b
 end
-local active = skinButton(frame, 64, 22, "ON")
-active:SetPoint("TOPRIGHT", close, "TOPLEFT", -4, -8)
-local aoe = skinButton(frame, 52, 22, "AOE")
-aoe:SetPoint("RIGHT", active, "LEFT", -6, 0)
-local cds = skinButton(frame, 52, 22, "CDS")
-cds:SetPoint("RIGHT", aoe, "LEFT", -6, 0)
+local function panelButton(parent, w, h, label)
+    local ok, b = pcall(function()
+        local btn = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+        btn:SetSize(w, h)
+        btn:SetText(label or "")
+        btn.text = btn:GetFontString()
+        return btn
+    end)
+    if ok and b then
+        if not b.text then
+            b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            b.text:SetPoint("CENTER")
+            b.text:SetText(label or "")
+        end
+        return b
+    end
+    return skinButton(parent, w, h, label)
+end
+local active = panelButton(frame, 64, 22, "ON")
+active:SetPoint("RIGHT", close, "LEFT", -4, -1)
+local aoe = panelButton(frame, 56, 22, "AOE")
+aoe:SetPoint("RIGHT", active, "LEFT", -4, 0)
+local cds = panelButton(frame, 56, 22, "CDS")
+cds:SetPoint("RIGHT", aoe, "LEFT", -4, 0)
 
-local tabBar = CreateFrame("Frame", nil, frame)
-tabBar:SetPoint("TOPLEFT", 14, -64)
-tabBar:SetPoint("TOPRIGHT", -14, -64)
-tabBar:SetHeight(30)
 local pages = {}
 local tabs = {}
 local selected = 1
 for i = 1, 3 do
     pages[i] = CreateFrame("Frame", nil, frame)
-    pages[i]:SetPoint("TOPLEFT", 14, -100)
-    pages[i]:SetPoint("BOTTOMRIGHT", -14, 28)
+    pages[i]:SetPoint("TOPLEFT", 18, -36)
+    pages[i]:SetPoint("BOTTOMRIGHT", -18, 16)
     pages[i]:Hide()
 end
 local labels = { "Play", "Rotation", "Spells" }
@@ -120,11 +142,17 @@ local function SelectTab(index)
     end
     for i, tab in ipairs(tabs) do
         local on = i == index
-        tab:SetBackdropColor(on and 0.09 or 0.05, on and 0.095 or 0.054, on and 0.11 or 0.062, 1)
-        tab:SetBackdropBorderColor(on and 0.22 or 0.13, on and 0.23 or 0.14, on and 0.25 or 0.15, 1)
-        tab.text:SetTextColor(on and 0.95 or 0.55, on and 0.95 or 0.56, on and 0.93 or 0.58)
-        if tab.line then
-            tab.line:SetShown(on)
+        if on and PanelTemplates_SelectTab then
+            pcall(PanelTemplates_SelectTab, tab)
+        elseif (not on) and PanelTemplates_DeselectTab then
+            pcall(PanelTemplates_DeselectTab, tab)
+        end
+        if tab.text then
+            tab.text:SetTextColor(on and 1 or 0.72, on and 0.82 or 0.7, on and 0 or 0.45)
+        end
+        if tab.SetBackdropColor then
+            pcall(tab.SetBackdropColor, tab, 0, 0, 0, on and 0.7 or 0.4)
+            pcall(tab.SetBackdropBorderColor, tab, 0.85, 0.68, 0.22, on and 1 or 0.7)
         end
     end
     if index == 3 and RH.RefreshClassDashboard then
@@ -132,15 +160,28 @@ local function SelectTab(index)
     end
 end
 for i, label in ipairs(labels) do
-    local b = skinButton(tabBar, 250, 28, label)
-    b:SetPoint("LEFT", (i - 1) * 258, 0)
-    b.line = b:CreateTexture(nil, "OVERLAY")
-    b.line:SetTexture(WHITE)
-    b.line:SetHeight(2)
-    b.line:SetPoint("BOTTOMLEFT", 12, 0)
-    b.line:SetPoint("BOTTOMRIGHT", -12, 0)
-    b.line:SetColorTexture(color.r, color.g, color.b, 1)
-    b.line:Hide()
+    local b
+    local ok, tab = pcall(function()
+        return CreateFrame("Button", "NextCastTab" .. i, frame, "CharacterFrameTabButtonTemplate")
+    end)
+    if ok and tab then
+        b = tab
+        b:SetText(label)
+        b.text = b:GetFontString()
+        if PanelTemplates_TabResize then
+            pcall(PanelTemplates_TabResize, b, 0, 140)
+        end
+    else
+        b = skinButton(frame, 128, 24, label)
+    end
+    if i == 1 then
+        b:ClearAllPoints()
+        b:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 12, 12)
+    else
+        b:ClearAllPoints()
+        b:SetPoint("LEFT", tabs[i - 1], "RIGHT", -8, 0)
+    end
+    b:SetFrameLevel((frame:GetFrameLevel() or 1) + 4)
     b:SetScript("OnClick", function()
         SelectTab(i)
     end)
@@ -152,19 +193,25 @@ local function card(parent, titleText, top, height)
     c:SetPoint("TOPLEFT", 4, top)
     c:SetPoint("TOPRIGHT", -4, top)
     c:SetHeight(height)
-    c:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    c:SetBackdropColor(0.055, 0.059, 0.068, 1)
-    c:SetBackdropBorderColor(0.14, 0.15, 0.17, 1)
+    c:SetBackdrop({
+        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+    })
+    c:SetBackdropColor(0.06, 0.06, 0.06, 0.72)
+    c:SetBackdropBorderColor(0.72, 0.58, 0.22, 1)
     local titleTextFS = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleTextFS:SetPoint("TOPLEFT", 16, -11)
     titleTextFS:SetText(titleText)
-    titleTextFS:SetTextColor(0.72, 0.74, 0.76)
     local line = c:CreateTexture(nil, "ARTWORK")
-    line:SetTexture(WHITE)
+    line:SetTexture("Interface\\Buttons\\WHITE8X8")
     line:SetPoint("TOPLEFT", 14, -30)
     line:SetPoint("TOPRIGHT", -14, -30)
     line:SetHeight(1)
-    line:SetColorTexture(0.16, 0.17, 0.19, 1)
+    line:SetColorTexture(0.55, 0.44, 0.16, 0.7)
     return c
 end
 
@@ -346,9 +393,16 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
     local list = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
     list:SetFrameStrata("TOOLTIP")
     list:SetSize(w, #options * 27 + 8)
-    list:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    list:SetBackdropColor(0.012, 0.017, 0.024, 0.99)
-    list:SetBackdropBorderColor(color.r * 0.7, color.g * 0.7, color.b * 0.7, 1)
+    list:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+    })
+    list:SetBackdropColor(0, 0, 0, 0.95)
+    list:SetBackdropBorderColor(1, 1, 1, 1)
     list:Hide()
     b.dropdown = list
     for i, option in ipairs(options) do
@@ -647,9 +701,16 @@ end
 local iconPicker = CreateFrame("Frame", nil, abilitiesContent, "BackdropTemplate")
 iconPicker:SetSize(230, 150)
 iconPicker:SetFrameStrata("TOOLTIP")
-iconPicker:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-iconPicker:SetBackdropColor(0.018, 0.024, 0.034, 0.995)
-iconPicker:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+iconPicker:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 },
+})
+iconPicker:SetBackdropColor(0, 0, 0, 0.95)
+iconPicker:SetBackdropBorderColor(1, 1, 1, 1)
 iconPicker:Hide()
 local pickerTitle = iconPicker:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 pickerTitle:SetPoint("TOPLEFT", 8, -7)
@@ -769,7 +830,7 @@ function RH.RefreshDashboard()
     active.text:SetText(enabled and "ON" or "OFF")
     active.text:SetTextColor(enabled and 0.45 or 0.92, enabled and 0.86 or 0.42, enabled and 0.58 or 0.40)
     active.held = enabled
-    active:SetBackdropBorderColor(enabled and 0.22 or 0.45, enabled and 0.42 or 0.18, enabled and 0.28 or 0.16, 1)
+    pcall(active.SetBackdropBorderColor, active, enabled and 0.35 or 0.7, enabled and 0.55 or 0.22, enabled and 0.18 or 0.12, 1)
     local mode = d.mode or "auto"
     aoe.text:SetText(mode == "single" and "ST" or (mode == "aoe" and "AOE" or "AUTO"))
     aoe.text:SetTextColor(RH.AoE and 0.94 or 0.72, RH.AoE and 0.72 or 0.73, RH.AoE and 0.42 or 0.74)
@@ -801,15 +862,15 @@ function RH.RefreshDashboard()
         if w.isSwitch then
             local on = switchOn(d, w)
             w.track:SetBackdropColor(
-                on and color.r * 0.35 or 0.05,
-                on and color.g * 0.35 or 0.055,
-                on and color.b * 0.35 or 0.062,
+                on and 0.45 or 0.05,
+                on and 0.32 or 0.05,
+                on and 0.08 or 0.05,
                 1
             )
             w.track:SetBackdropBorderColor(
-                on and color.r * 0.8 or 0.24,
-                on and color.g * 0.8 or 0.25,
-                on and color.b * 0.8 or 0.27,
+                on and 0.95 or 0.45,
+                on and 0.75 or 0.38,
+                on and 0.20 or 0.18,
                 1
             )
             w.knob:ClearAllPoints()
@@ -872,11 +933,11 @@ frame:SetScript("OnHide", function()
     end
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footer:SetPoint("BOTTOMLEFT", 14, 8)
-footer:SetText("NEXTCAST  6.3.6")
-footer:SetTextColor(0.38, 0.42, 0.49)
+footer:SetPoint("LEFT", subtitle, "RIGHT", 14, 0)
+footer:SetText("6.4.0")
+footer:SetTextColor(0.72, 0.62, 0.32)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footerRight:SetPoint("BOTTOMRIGHT", -14, 8)
+footerRight:SetPoint("BOTTOMRIGHT", -22, 18)
 footerRight:SetText("/nc")
 footerRight:SetTextColor(color.r * 0.7, color.g * 0.7, color.b * 0.7)
 local function fitWindow()
