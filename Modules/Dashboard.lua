@@ -592,11 +592,13 @@ startHint:SetPoint("TOPLEFT", 16, -58)
 startHint:SetWidth(700)
 startHint:SetJustifyH("LEFT")
 startHint:SetText("Off = never recommend. Role, spec, and level still decide when it fires.")
-local listCard = card(abilitiesContent, "LEARNED ROTATION", -90, 400)
+local allAbilities = RH.Abilities[token] or {}
+local listRows = math.max(1, math.ceil(#allAbilities / 2))
+local listH = 52 + listRows * 34
+local listCard = card(abilitiesContent, "LEARNED ROTATION", -90, listH)
+abilitiesContent:SetHeight(90 + listH + 16)
 local classRows = {}
-local classPage = 1
-local CLASS_PER_PAGE = 20
-for i = 1, CLASS_PER_PAGE do
+for i = 1, #allAbilities do
     local col = (i - 1) % 2
     local row = math.floor((i - 1) / 2)
     local b = CreateFrame("Button", nil, listCard)
@@ -718,26 +720,15 @@ end
 pages[3]:HookScript("OnHide", function()
     iconPicker:Hide()
 end)
-local classPrev = skinButton(abilitiesContent, 80, 24, "PREVIOUS")
-classPrev:SetPoint("TOPLEFT", listCard, "BOTTOMLEFT", 10, -12)
-local classNext = skinButton(abilitiesContent, 80, 24, "NEXT")
-classNext:SetPoint("TOPRIGHT", listCard, "BOTTOMRIGHT", -10, -12)
-local classPageText = abilitiesContent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-classPageText:SetPoint("TOP", classPrev, "TOP", 350, -6)
 function RH.RefreshClassDashboard()
     local all = RH.Abilities[token] or {}
     local d = RH.EnsureDB()
-    local list = {}
     local learned = 0
     for _, e in ipairs(all) do
         if RH.AbilityStatus(e) then
             learned = learned + 1
         end
-        list[#list + 1] = e
     end
-    local pagesCount = math.max(1, math.ceil(#list / CLASS_PER_PAGE))
-    classPage = math.max(1, math.min(classPage, pagesCount))
-    local first = (classPage - 1) * CLASS_PER_PAGE + 1
     classStatusText:SetText(
         "Level "
             .. tostring(UnitLevel("player") or "?")
@@ -749,7 +740,7 @@ function RH.RefreshClassDashboard()
             .. tostring(d.spec or "Leveling")
     )
     for i, b in ipairs(classRows) do
-        local e = list[first + i - 1]
+        local e = all[i]
         b.entry = e
         if e then
             local known, texture = RH.AbilityStatus(e)
@@ -770,18 +761,7 @@ function RH.RefreshClassDashboard()
             b:Hide()
         end
     end
-    classPageText:SetText("Page " .. classPage .. " / " .. pagesCount)
-    classPrev:SetEnabled(classPage > 1)
-    classNext:SetEnabled(classPage < pagesCount)
 end
-classPrev:SetScript("OnClick", function()
-    classPage = classPage - 1
-    RH.RefreshClassDashboard()
-end)
-classNext:SetScript("OnClick", function()
-    classPage = classPage + 1
-    RH.RefreshClassDashboard()
-end)
 
 function RH.RefreshDashboard()
     local d = RH.EnsureDB()
@@ -893,7 +873,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 8)
-footer:SetText("NEXTCAST  6.3.5")
+footer:SetText("NEXTCAST  6.3.6")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 8)
