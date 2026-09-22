@@ -1,0 +1,32 @@
+## Interface: 16001
+## Title: NextCast
+## Notes: All-class recommendation engine for WoW Forever 1-30. Griph ExtraIcon GGL protocol.
+## Version: 5.8.7
+## SavedVariables: NextCastDB, RubimRHDB
+## Author: NextCast
+## X-Website: /nc ggl
+## X-Category: Combat
+
+Libs\HeroCache\Main.lua
+Libs\HeroDBC\Core.lua
+Libs\HeroLib\Core.lua
+Libs\HeroLib\Class\Spell.lua
+Libs\HeroLib\Class\Unit.lua
+Libs\HeroLib\Events.lua
+Core.lua
+Modules\Helpers.lua
+Modules\LevelGates.lua
+Modules\Abilities.lua
+Modules\GGL.lua
+Modules\Icons.lua
+Modules\Dashboard.lua
+Rotations\Rogue.lua
+Rotations\Warrior.lua
+Rotations\Paladin.lua
+Rotations\Hunter.lua
+Rotations\Mage.lua
+Rotations\Priest.lua
+Rotations\Shaman.lua
+Rotations\Warlock.lua
+Rotations\Druid.lua
+Bindings.xml
