@@ -5,7 +5,7 @@ local cc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class] or { r = 0.78, g = 
 
 local f = CreateFrame("Frame", "NextCastIcon", UIParent, "BackdropTemplate")
 RH.IconFrame = f
-f:SetSize(72, 118)
+f:SetSize(76, 122)
 f:SetPoint("CENTER")
 f:SetMovable(true)
 f:EnableMouse(true)
@@ -19,14 +19,14 @@ f:SetBackdrop({
     edgeSize = 12,
     insets = { left = 3, right = 3, top = 3, bottom = 3 },
 })
-f:SetBackdropColor(0, 0, 0, 0.9)
+f:SetBackdropColor(0, 0, 0, 0.92)
 f:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
 
 local function panelBtn(label, x)
     local ok, b = pcall(function()
         local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        btn:SetSize(32, 18)
-        btn:SetPoint("TOPLEFT", 4 + x, -4)
+        btn:SetSize(31, 18)
+        btn:SetPoint("TOPLEFT", 6 + x, -6)
         btn:SetText(label)
         btn.text = btn:GetFontString()
         return btn
@@ -35,8 +35,8 @@ local function panelBtn(label, x)
         return b
     end
     b = CreateFrame("Button", nil, f, "BackdropTemplate")
-    b:SetSize(32, 18)
-    b:SetPoint("TOPLEFT", 4 + x, -4)
+    b:SetSize(31, 18)
+    b:SetPoint("TOPLEFT", 6 + x, -6)
     b:SetBackdrop({
         bgFile = WHITE,
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -46,14 +46,14 @@ local function panelBtn(label, x)
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
     b:SetBackdropColor(0, 0, 0, 0.55)
-    b:SetBackdropBorderColor(0.75, 0.6, 0.22, 1)
+    b:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
     b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     b.text:SetPoint("CENTER")
     b.text:SetText(label)
     return b
 end
 local modeToggle = panelBtn("AUTO", 0)
-local cdToggle = panelBtn("CDS", 32)
+local cdToggle = panelBtn("CDS", 33)
 
 local function setBtnText(btn, text)
     if btn.SetText then
@@ -98,23 +98,12 @@ cdToggle:SetScript("OnClick", function()
     RefreshMiniToggles()
 end)
 
-local well = CreateFrame("Frame", nil, f, "BackdropTemplate")
-well:SetSize(60, 60)
-well:SetPoint("TOP", 0, -24)
-well:SetBackdrop({
-    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true,
-    tileSize = 16,
-    edgeSize = 12,
-    insets = { left = 3, right = 3, top = 3, bottom = 3 },
-})
-well:SetBackdropColor(0, 0, 0, 1)
-well:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
+local well = CreateFrame("Frame", nil, f)
+well:SetSize(52, 52)
+well:SetPoint("TOP", 0, -28)
 
 local icon = well:CreateTexture(nil, "ARTWORK")
-icon:SetPoint("TOPLEFT", 4, -4)
-icon:SetPoint("BOTTOMRIGHT", -4, 4)
+icon:SetAllPoints()
 icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 local classLetter = well:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
 classLetter:SetPoint("CENTER")
@@ -139,19 +128,29 @@ pulse:SetColorTexture(cc.r, cc.g, cc.b, 1)
 pulse:SetAlpha(0)
 pulse:SetBlendMode("ADD")
 
-local plate = CreateFrame("Frame", nil, f)
-plate:SetSize(62, 16)
-plate:SetPoint("TOP", well, "BOTTOM", 0, -1)
-local nameText = plate:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+local plate = CreateFrame("Frame", nil, f, "BackdropTemplate")
+plate:SetHeight(18)
+plate:SetPoint("BOTTOMLEFT", 6, 6)
+plate:SetPoint("BOTTOMRIGHT", -6, 6)
+plate:SetBackdrop({
+    bgFile = "Interface\\Buttons\\WHITE8X8",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = { left = 2, right = 2, top = 2, bottom = 2 },
+})
+plate:SetBackdropColor(0.12, 0.09, 0.03, 0.95)
+plate:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
+local nameText = plate:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 nameText:SetPoint("CENTER")
-nameText:SetWidth(58)
+nameText:SetWidth(60)
 nameText:SetJustifyH("CENTER")
 
 local function showIdleClass()
     local c = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
     icon:ClearAllPoints()
-    icon:SetSize(48, 48)
-    icon:SetPoint("CENTER")
+    icon:SetAllPoints()
     icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
     if c then
         icon:SetTexCoord(c[1], c[2], c[3], c[4])
@@ -170,7 +169,7 @@ for i = 1, 5 do
     local p = f:CreateTexture(nil, "OVERLAY")
     p:SetTexture(WHITE)
     p:SetSize(8, 3)
-    p:SetPoint("BOTTOM", f, "BOTTOM", (i - 3) * 11, 6)
+    p:SetPoint("BOTTOM", plate, "TOP", (i - 3) * 11, 3)
     pips[i] = p
 end
 
@@ -219,8 +218,7 @@ f:SetScript("OnUpdate", function(_, dt)
     end
     if tex then
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", 4, -4)
-        icon:SetPoint("BOTTOMRIGHT", -4, 4)
+        icon:SetAllPoints()
         icon:SetTexture(tex)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:SetVertexColor(1, 1, 1, 1)
@@ -247,7 +245,7 @@ f:SetScript("OnUpdate", function(_, dt)
         pcall(icon.SetDesaturated, icon, false)
         local paused = RH.EnsureDB().enabled == false
         nameText:SetText(paused and "Off" or "Ready")
-        nameText:SetTextColor(0.62, 0.64, 0.66)
+        nameText:SetTextColor(paused and 0.85 or 1, paused and 0.22 or 0.82, paused and 0.12 or 0)
     end
     local points, pr, pg, pb
     if class == "WARRIOR" then
