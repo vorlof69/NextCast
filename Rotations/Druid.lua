@@ -238,63 +238,23 @@ RubimRH.Rotation.SetAPL(11, function()
             local spell = HeroLib.State.shiftSpell or S.Bear
             return spell:Cast()
         end
-        if action == "leave" and shapeshifted then
-            local spell = HeroLib.State.shiftSpell or S.Bear
-            return spell:Cast()
-        end
-        if action == "enter" then
-            return nil
-        end
-        -- leave finished (now caster): fall through so MotW/Thorns can fire.
+        return nil
     end
 
-    local function missingSelf(buff)
-        if RH.RecentlyBuffed("player", buff) then
-            return false
-        end
-        return P:Buff(buff) == false
-    end
-    local needSelfBuff = db.maintainBuffs ~= false
-        and (missingSelf("Mark of the Wild") or missingSelf("Thorns"))
-
-    -- Tank stays in Bear. Out of combat, drop ONCE for the player's own
-    -- MotW/Thorns, then shift back. Never drop for party buffs.
-    if shapeshifted and not P:AffectingCombat() and needSelfBuff then
-        local formSpell = cat and S.Cat or S.Bear
-        if formSpell:IsAvailable() and RH.Ready(formSpell) then
-            HeroLib.State.druidReturnToForm = formSpell
-            RH.NoteShift("leave", formSpell)
-            return formSpell:Cast()
-        end
-    end
-
+    -- Stay in Bear/Cat. MotW and Thorns only while already caster — dropping
+    -- form after every kill to recast them was flashing human then Bear.
     if db.maintainBuffs ~= false and not shapeshifted then
-        if HeroLib.State.druidReturnToForm then
-            if missingSelf("Mark of the Wild") then
-                local cast = RH.CastAllyBuff(S.Mark, "player", "Mark of the Wild", 90)
-                if cast then
-                    return cast
-                end
+        local mark = RH.FindMissingBuff("Mark of the Wild")
+        if mark then
+            local cast = RH.CastAllyBuff(S.Mark, mark, "Mark of the Wild", 300)
+            if cast then
+                return cast
             end
-            if missingSelf("Thorns") then
-                local cast = RH.CastIfMissing(S.Thorns, "Thorns", 90)
-                if cast then
-                    return cast
-                end
-            end
-        else
-            local mark = RH.FindMissingBuff("Mark of the Wild")
-            if mark then
-                local cast = RH.CastAllyBuff(S.Mark, mark, "Mark of the Wild", 300)
-                if cast then
-                    return cast
-                end
-            end
-            if missingSelf("Thorns") then
-                local cast = RH.CastIfMissing(S.Thorns, "Thorns", 240)
-                if cast then
-                    return cast
-                end
+        end
+        if not RH.RecentlyBuffed("player", "Thorns") and P:Buff("Thorns") == false then
+            local cast = RH.CastIfMissing(S.Thorns, "Thorns", 240)
+            if cast then
+                return cast
             end
         end
     end
@@ -305,15 +265,6 @@ RubimRH.Rotation.SetAPL(11, function()
         end
     end
     RH.healTarget = nil
-
-    if HeroLib.State.druidReturnToForm and not shapeshifted and not needSelfBuff then
-        local formSpell = HeroLib.State.druidReturnToForm
-        HeroLib.State.druidReturnToForm = nil
-        if formSpell and formSpell:IsAvailable() and RH.Ready(formSpell) then
-            RH.NoteShift("enter", formSpell)
-            return formSpell:Cast()
-        end
-    end
 
     if not RH.ValidTarget() then
         return nil

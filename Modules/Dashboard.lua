@@ -710,7 +710,7 @@ function RH.ToggleMenu()
 end
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 10)
-footer:SetText("NEXTCAST  5.9.1")
+footer:SetText("NEXTCAST  5.9.2")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 10)

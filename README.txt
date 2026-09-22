@@ -1,4 +1,4 @@
-NextCast 5.9.1 — WoW Forever 1–30
+NextCast 5.9.2 — WoW Forever 1–30
 =================================
 
 Install
