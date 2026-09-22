@@ -237,7 +237,7 @@ RubimRH.Rotation.SetAPL(11, function()
     else
         HeroLib.State.druidOOCAt = HeroLib.State.druidOOCAt or GetTime()
     end
-    local oocSettled = HeroLib.State.druidOOCAt and (GetTime() - HeroLib.State.druidOOCAt) >= 6
+    local oocSettled = HeroLib.State.druidOOCAt and (GetTime() - HeroLib.State.druidOOCAt) >= 1.2
 
     -- Never recast Bear/Cat while a shift is in flight — second press dumps the form.
     if RH.ShiftPending() then
@@ -253,22 +253,30 @@ RubimRH.Rotation.SetAPL(11, function()
         end
     end
 
-    local function markUp()
+    local function markUp(strict)
         if RH.RecentlyBuffed("player", "Mark of the Wild") or RH.RecentlyBuffed("player", "Gift of the Wild") then
             return true
         end
-        -- Unknown (nil) counts as up so we do not dump Bear on a bad scan.
-        return P:Buff("Mark of the Wild") ~= false
+        local have = P:Buff("Mark of the Wild")
+        if have == true then
+            return true
+        end
+        if have == false then
+            return false
+        end
+        -- Unknown: combat/form must not dump Bear. Out of combat we recast.
+        return strict == true
     end
 
     -- MotW cannot be cast in Bear. GGLoader presses the NC MotW macro
     -- (/cancelform then [@player]) so we only PAINT the icon — we do not
     -- toggle Bear ourselves. After it lands, shift back.
+    -- Tank OOC: unknown aura (Forever secrets in form) counts as missing.
     if
         db.maintainBuffs ~= false
+        and not inCombat
         and oocSettled
-        and not RH.ValidTarget()
-        and not markUp()
+        and not markUp(false)
         and S.Mark:IsAvailable()
         and RH.Ready(S.Mark)
     then
@@ -281,7 +289,7 @@ RubimRH.Rotation.SetAPL(11, function()
     end
 
     if db.maintainBuffs ~= false and not shapeshifted then
-        if not markUp() then
+        if not markUp(inCombat) then
             local unit = HeroLib.State.druidReturnToForm and "player" or RH.FindMissingBuff("Mark of the Wild")
             if unit then
                 local cast = RH.CastAllyBuff(S.Mark, unit, "Mark of the Wild", 300)

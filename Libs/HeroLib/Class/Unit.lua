@@ -268,6 +268,24 @@ local function aura(unit, wanted, filter)
         HL.State.auraCache[key] = { at = GetTime(), value = true }
         return true
     end
+    -- Forever / Midnight: C_UnitAuras.GetAuraDataBySpellName is the TMW 12.1.5
+    -- path. Index scans throw when auras are secret; name lookup still works.
+    if C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName then
+        local filter = helpful and "HELPFUL" or "HARMFUL"
+        local names = { wanted }
+        local extra = auraAliases[wanted]
+        if extra then
+            for i = 1, #extra do
+                names[#names + 1] = extra[i]
+            end
+        end
+        for i = 1, #names do
+            local ok, data = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, names[i], filter)
+            if ok and type(data) == "table" and not HL.Secret(data) then
+                return found()
+            end
+        end
+    end
     -- Direct name lookup (WotLK+ / some Classic builds).
     if UnitAura then
         local ok, name = pcall(UnitAura, unit, wanted)

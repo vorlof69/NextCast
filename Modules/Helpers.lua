@@ -854,8 +854,11 @@ end
 -- to auto-PlaceAction on login; Classic needs a hardware click for that,
 -- so PLACE ON BAR is a dashboard button now.
 
--- Self buff / aura / aspect / armor. Unknown (nil) does not recast.
--- On recommend we latch so a false aura scan cannot pulse every GCD.
+-- Self buff / aura / aspect / armor.
+-- Visible true  → skip.
+-- Visible false → recast.
+-- Unknown (nil) → recast only out of combat (latched). Combat unknown must
+-- not pulse every GCD — Forever secrets auras in form / in combat.
 function RH.CastIfMissing(spell, names, seconds)
     if not spell then
         return nil
@@ -869,13 +872,17 @@ function RH.CastIfMissing(spell, names, seconds)
     if #names == 0 then
         return nil
     end
+    local inCombat = RH.Player and RH.Player:AffectingCombat()
     for i = 1, #names do
         local n = names[i]
         if RH.RecentlyBuffed("player", n) then
             return nil
         end
         local have = RH.Player:Buff(n)
-        if have ~= false then
+        if have == true then
+            return nil
+        end
+        if have ~= false and inCombat then
             return nil
         end
     end
@@ -976,8 +983,13 @@ function RH.FindMissingBuff(buffName, entries)
             if ally:Exists() and not ally:IsDeadOrGhost() then
                 if RH.RecentlyBuffed(unit, buffName) then
                     -- already pulsed this buff at this ally
-                elseif ally:Buff(buffName) == false then
-                    if RH.FriendlyInRange(unit) ~= false then
+                else
+                    local have = ally:Buff(buffName)
+                    local missing = have == false
+                    if not missing and have ~= true and unit == "player" then
+                        missing = not (RH.Player and RH.Player:AffectingCombat())
+                    end
+                    if missing and RH.FriendlyInRange(unit) ~= false then
                         return unit
                     end
                 end

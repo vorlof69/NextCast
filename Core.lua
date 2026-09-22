@@ -135,7 +135,7 @@ local defaults = {
     iconMappings = {},
     abilityDisabled = {},
     burst = false,
-    configVersion = 30,
+    configVersion = 31,
 }
 local validSpecs = {
     ROGUE = { Assassination = true, Combat = true, Subtlety = true },
@@ -871,18 +871,6 @@ SlashCmdList.NEXTCAST = function(msg)
             RH.GGLCalibrate(not RH.gglCalibrating)
         end
         return
-    elseif c == "preset" then
-        local id = string.lower((msg or ""):match("^%s*%S+%s+(%S+)") or "")
-        if id == "dps" or id == "tank" or id == "healer" or id == "pvp" or id == "reset" or id == "auto" then
-            RH.ApplyPreset(id)
-            if RH.RefreshDashboard then
-                RH.RefreshDashboard()
-            end
-            print("|cffc8ccd4NextCast|r: preset " .. id)
-        else
-            print("|cff00d1ffNextCast|r: usage /nc preset dps|tank|healer|pvp|auto|reset")
-        end
-        return
     elseif c == "reset" then
         local class = select(2, UnitClass("player"))
         if db.classProfiles then
@@ -898,7 +886,7 @@ SlashCmdList.NEXTCAST = function(msg)
         end
         return
     else
-        print("|cffc8ccd4NextCast|r: /nc menu, macros, cd, aoe, kick, burst, queue <spell>, preset, ggl, reset, log")
+        print("|cffc8ccd4NextCast|r: /nc menu, macros, cd, aoe, kick, burst, queue <spell>, ggl, reset, log")
         return
     end
     local enabled = (c == "cd" and RH.CDs) or (c == "aoe" and RH.AoE) or (c == "kick" and RH.Interrupts)

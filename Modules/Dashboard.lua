@@ -367,7 +367,7 @@ local macroHint = macroCard:CreateFontString(nil, "OVERLAY", "GameFontHighlightS
 macroHint:SetPoint("TOPLEFT", 18, -42)
 macroHint:SetWidth(500)
 macroHint:SetJustifyH("LEFT")
-macroHint:SetText("GGL clicks the ExtraIcon texture. PLACE the NextCast macro on that bar slot so the press hits the right unit — MotW cancels Bear, heals use the UNIT you pick.")
+macroHint:SetText("GGL clicks ExtraIcon ST. PLACE the NextCast macro so the press hits the right unit. TargetColor at 163,0 (Action) and 737,-12 (ExtraIcon) both paint the heal unit.")
 local createAll = skinButton(macroCard, 100, 22, "CREATE ALL")
 createAll:SetPoint("TOPRIGHT", -16, -48)
 createAll:SetScript("OnClick", function()

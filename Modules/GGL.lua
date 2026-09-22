@@ -16,8 +16,10 @@ local RH = RubimRH
 --   AoE     30x30 @ 90,0    AoE / heal (secondary)
 --   glad    30x30 @ 120,0   PvP CC texture
 --   passive 30x30 @ 150,0   defensive texture
---   TargetColor 1x1 @ 737,-12  named "TargetColor"  (heal-unit UC color)
+--   TargetColor 1x1 @ 737,-12  named ExtraIcon child  (Griph heal-unit UC)
+--   Action TargetColor 1x1 @ UIParent TOPLEFT 163, 0  (Action HealingEngine)
 --
+-- Dual protocol so ExtraIcon GGL and Action GGL both see the heal unit.
 -- Heals/buffs: ExtraIcon GGL clicks ST and presses the matching bar key.
 -- Put the NextCast macro (Modules/Macros.lua) on that slot via
 -- /nc → Macros → PLACE ON BAR so the press is [@player]/[@partyN], not
@@ -62,7 +64,22 @@ local stIcon = MakePixel(nil, topIcons, 30, 30, 60, 0, 0, 1, 0, 0)
 local aoeIcon = MakePixel(nil, topIcons, 30, 30, 90, 0, 1, 1, 0, 0)
 local gladiatorIcon = MakePixel(nil, topIcons, 30, 30, 120, 0, 0, 0, 1, 0)
 local passiveIcon = MakePixel(nil, topIcons, 30, 30, 150, 0, 1, 0, 0, 0)
-local targetColor = MakePixel("TargetColor", topIcons, 1, 1, 737, -12, 0, 0, 0, 1)
+local targetColor = MakePixel("NextCastTargetColor", topIcons, 1, 1, 737, -12, 0, 0, 0, 1)
+
+-- Action HealingEngine pixel. Action GGL samples UIParent TOPLEFT 163,0
+-- by the global name TargetColor. ExtraIcon GGL samples the child at 737,-12.
+-- Both get the same UC color so either reader works. No TellMeWhen.
+local actionTargetColor = CreateFrame("Frame", "TargetColor", UIParent)
+actionTargetColor:SetFrameStrata("TOOLTIP")
+actionTargetColor:SetToplevel(true)
+actionTargetColor:EnableMouse(false)
+actionTargetColor:SetSize(1, 1)
+actionTargetColor:SetScale(1)
+actionTargetColor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 163, 0)
+actionTargetColor.texture = actionTargetColor:CreateTexture(nil, "OVERLAY")
+actionTargetColor.texture:SetAllPoints()
+actionTargetColor.texture:SetColorTexture(0, 0, 0, 1)
+actionTargetColor:Show()
 
 RH.topIcons = topIcons
 RH.ccIcon = ccIcon
@@ -73,9 +90,10 @@ RH.gladiatorIcon = gladiatorIcon
 RH.passiveIcon = passiveIcon
 RH.ShownMain = topIcons
 RH.TargetColor = targetColor
+RH.ActionTargetColor = actionTargetColor
 -- Older NextCast / Action docs named the rotation pixel ActionLiteMiniFrame.
 _G.ActionLiteMiniFrame = stIcon
-_G.TargetColor = targetColor
+_G.TargetColor = actionTargetColor
 
 -- Action Data.UC heal-unit colors. Index layout matches HealingEngine:
 -- raid1-40, party1-4, player, focus, partypet1-4, raidpet1-40.
@@ -201,6 +219,9 @@ function RH.UpdateTargetColorPixel(unit)
         lastColorIndex = index
         local c = UC[index] or UC[0]
         targetColor.texture:SetColorTexture(c[1], c[2], c[3], c[4])
+        if actionTargetColor and actionTargetColor.texture then
+            actionTargetColor.texture:SetColorTexture(c[1], c[2], c[3], c[4])
+        end
     end
 end
 
@@ -399,8 +420,11 @@ function RH.GGLCalibrate(enable)
         PaintTexture(passiveIcon, icons[4] or 133653)
         local c = UC[45]
         targetColor.texture:SetColorTexture(c[1], c[2], c[3], c[4])
+        if actionTargetColor and actionTargetColor.texture then
+            actionTargetColor.texture:SetColorTexture(c[1], c[2], c[3], c[4])
+        end
         lastColorIndex = -1
-        print("|cffc8ccd4NextCast|r: ExtraIcon calibration ON. Cyan flags at 0/30, Universal 1–4 on ST/AoE/Glad/Passive, player heal color on TargetColor. /nc ggl again to stop.")
+        print("|cffc8ccd4NextCast|r: ExtraIcon + Action TargetColor calibration ON. /nc ggl again to stop.")
     else
         PaintFlag(ccIcon, false)
         PaintFlag(kickIcon, false)
@@ -409,6 +433,9 @@ function RH.GGLCalibrate(enable)
         PaintTexture(gladiatorIcon, nil)
         PaintTexture(passiveIcon, nil)
         targetColor.texture:SetColorTexture(UC[0][1], UC[0][2], UC[0][3], UC[0][4])
+        if actionTargetColor and actionTargetColor.texture then
+            actionTargetColor.texture:SetColorTexture(UC[0][1], UC[0][2], UC[0][3], UC[0][4])
+        end
         lastColorIndex = 0
         print("|cffc8ccd4NextCast|r: ExtraIcon calibration OFF.")
     end
