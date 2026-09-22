@@ -46,17 +46,14 @@ header:SetPoint("TOPRIGHT", -1, -1)
 header:SetHeight(56)
 header:SetColorTexture(0.048, 0.052, 0.062, 1)
 local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
-local crestRing = frame:CreateTexture(nil, "ARTWORK")
-crestRing:SetTexture(WHITE)
-crestRing:SetSize(36, 36)
-crestRing:SetPoint("TOPLEFT", 16, -10)
-crestRing:SetColorTexture(color.r, color.g, color.b, 0.32)
 local crest = frame:CreateTexture(nil, "ARTWORK")
 crest:SetSize(32, 32)
-crest:SetPoint("CENTER", crestRing, "CENTER")
+crest:SetPoint("TOPLEFT", 16, -12)
 crest:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
 if coords then
-    crest:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
+    local dx = (coords[2] - coords[1]) * 0.22
+    local dy = (coords[4] - coords[3]) * 0.22
+    crest:SetTexCoord(coords[1] + dx, coords[2] - dx, coords[3] + dy, coords[4] - dy)
 end
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 60, -12)
@@ -421,7 +418,7 @@ local function track(w)
 end
 
 -- PLAY
-local play = card(pages[1], "SPECIALIZATION", -2, 112)
+local play = card(pages[1], "SPECIALIZATION", -2, 118)
 local specOptions = {}
 for _, name in ipairs(specs[token] or { "Automatic", "Leveling" }) do
     specOptions[#specOptions + 1] = { name, name }
@@ -430,7 +427,7 @@ track(dropdown(play, "SPEC", "spec", specOptions, 16, -40, 740, function(value)
     RH.SetSpec(value)
 end))
 local engineReadout = play:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-engineReadout:SetPoint("TOPLEFT", 16, -90)
+engineReadout:SetPoint("TOPLEFT", 16, -96)
 engineReadout:SetWidth(740)
 engineReadout:SetJustifyH("LEFT")
 engineReadout:SetTextColor(0.56, 0.60, 0.66)
@@ -444,29 +441,28 @@ local usesDots = token == "ROGUE"
     or token == "DRUID"
     or token == "WARRIOR"
 
-local engineH = isHealer and 168 or (usesDots and 128 or 92)
-local engine = card(pages[1], "ENGINE", -124, engineH)
-track(switch(engine, "Cooldowns", "cooldowns", 16, -44, "Racials and class cooldowns when Burst is on.", true))
-track(switch(engine, "Interrupts", "interrupts", 400, -44, "Kick when a hostile cast is readable.", true))
-local engineY = -84
+local engineSwitches = {
+    { "Cooldowns", "cooldowns", "Racials and class cooldowns.", true },
+    { "Interrupts", "interrupts", "Kick when a hostile cast is readable.", true },
+}
 if isHealer then
-    track(switch(engine, "Healing", "healing", 16, engineY, "Role-aware heals. Healers full kit, tanks self-sustain.", true))
-    track(switch(engine, "Defensives", "defensives", 400, engineY, "Personal survival at low health.", true))
-    engineY = engineY - 40
-    track(switch(engine, "Maintain buffs", "maintainBuffs", 16, engineY, "Keep class buffs, auras, and aspects up.", true))
-    if usesDots then
-        track(switch(engine, "DoTs", "useDots", 400, engineY, "Keep bleeds and magic dots on lasting targets.", true))
-    end
-else
-    track(switch(engine, "Defensives", "defensives", 16, engineY, "Personal survival at low health.", true))
-    track(switch(engine, "Maintain buffs", "maintainBuffs", 400, engineY, "Keep class buffs, auras, and aspects up.", true))
-    engineY = engineY - 40
-    if usesDots then
-        track(switch(engine, "DoTs", "useDots", 16, engineY, "Keep bleeds and magic dots on lasting targets.", true))
-    end
+    engineSwitches[#engineSwitches + 1] = { "Healing", "healing", "Role-aware heals. Healers full kit, tanks self-sustain.", true }
+end
+engineSwitches[#engineSwitches + 1] = { "Defensives", "defensives", "Personal survival at low health.", true }
+engineSwitches[#engineSwitches + 1] = { "Maintain buffs", "maintainBuffs", "Keep class buffs, auras, and aspects up.", true }
+if usesDots then
+    engineSwitches[#engineSwitches + 1] = { "DoTs", "useDots", "Keep bleeds and magic dots on lasting targets.", true }
+end
+local engineRows = math.ceil(#engineSwitches / 2)
+local engineH = 52 + engineRows * 40
+local engine = card(pages[1], "ENGINE", -128, engineH)
+for i, item in ipairs(engineSwitches) do
+    local col = (i - 1) % 2
+    local row = math.floor((i - 1) / 2)
+    track(switch(engine, item[1], item[2], col == 0 and 16 or 400, -44 - row * 40, item[3], item[4]))
 end
 
-local display = card(pages[1], "DISPLAY", -124 - engineH - 10, 92)
+local display = card(pages[1], "DISPLAY", -128 - engineH - 10, 92)
 track(switch(display, "Lock HUD", "locked", 16, -44, "Prevent dragging the recommendation icon.", false))
 track(slider(display, "HUD scale", "scale", 0.6, 2.0, 0.1, 400, -40, 340, "x"))
 
@@ -475,7 +471,7 @@ local rotScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameT
 rotScroll:SetPoint("TOPLEFT", 0, 0)
 rotScroll:SetPoint("BOTTOMRIGHT", -22, 0)
 local rotContent = CreateFrame("Frame", nil, rotScroll)
-rotContent:SetSize(746, 560)
+rotContent:SetSize(746, 640)
 rotScroll:SetScrollChild(rotContent)
 
 local ctxKey = string.lower(token) .. "Context"
@@ -897,7 +893,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 8)
-footer:SetText("NEXTCAST  6.3.4")
+footer:SetText("NEXTCAST  6.3.5")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 8)
