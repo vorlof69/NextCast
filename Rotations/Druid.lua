@@ -231,24 +231,63 @@ RubimRH.Rotation.SetAPL(11, function()
         HeroLib.State.druidEngagedSince = nil
     end
 
+    local inCombat = P:AffectingCombat()
+    if inCombat then
+        HeroLib.State.druidOOCAt = nil
+    else
+        HeroLib.State.druidOOCAt = HeroLib.State.druidOOCAt or GetTime()
+    end
+    local oocSettled = HeroLib.State.druidOOCAt and (GetTime() - HeroLib.State.druidOOCAt) >= 6
+
     -- Never recast Bear/Cat while a shift is in flight — second press dumps the form.
     if RH.ShiftPending() then
         local action = HeroLib.State.shiftAction
         if action == "enter" and not shapeshifted then
-            local spell = HeroLib.State.shiftSpell or S.Bear
-            return spell:Cast()
+            return (HeroLib.State.shiftSpell or S.Bear):Cast()
         end
-        return nil
+        if action == "leave" and shapeshifted then
+            return (HeroLib.State.shiftSpell or S.Bear):Cast()
+        end
+        if action == "enter" then
+            return nil
+        end
     end
 
-    -- Stay in Bear/Cat. MotW and Thorns only while already caster — dropping
-    -- form after every kill to recast them was flashing human then Bear.
+    local function markUp()
+        if RH.RecentlyBuffed("player", "Mark of the Wild") or RH.RecentlyBuffed("player", "Gift of the Wild") then
+            return true
+        end
+        -- Unknown (nil) counts as up so we do not dump Bear on a bad scan.
+        return P:Buff("Mark of the Wild") ~= false
+    end
+
+    -- MotW cannot be cast in Bear. Wait until combat has been over for 6s
+    -- and there is no live target, then drop ONCE, buff yourself, shift back.
+    -- RecentlyBuffed (5 min) stops the every-kill human flash.
+    if
+        shapeshifted
+        and oocSettled
+        and not RH.ValidTarget()
+        and db.maintainBuffs ~= false
+        and not markUp()
+        and S.Mark:IsAvailable()
+    then
+        local formSpell = cat and S.Cat or S.Bear
+        if formSpell:IsAvailable() and RH.Ready(formSpell) then
+            HeroLib.State.druidReturnToForm = formSpell
+            RH.NoteShift("leave", formSpell)
+            return formSpell:Cast()
+        end
+    end
+
     if db.maintainBuffs ~= false and not shapeshifted then
-        local mark = RH.FindMissingBuff("Mark of the Wild")
-        if mark then
-            local cast = RH.CastAllyBuff(S.Mark, mark, "Mark of the Wild", 300)
-            if cast then
-                return cast
+        if not markUp() then
+            local unit = HeroLib.State.druidReturnToForm and "player" or RH.FindMissingBuff("Mark of the Wild")
+            if unit then
+                local cast = RH.CastAllyBuff(S.Mark, unit, "Mark of the Wild", 300)
+                if cast then
+                    return cast
+                end
             end
         end
         if not RH.RecentlyBuffed("player", "Thorns") and P:Buff("Thorns") == false then
@@ -265,6 +304,15 @@ RubimRH.Rotation.SetAPL(11, function()
         end
     end
     RH.healTarget = nil
+
+    if HeroLib.State.druidReturnToForm and not shapeshifted and markUp() then
+        local formSpell = HeroLib.State.druidReturnToForm
+        HeroLib.State.druidReturnToForm = nil
+        if formSpell and formSpell:IsAvailable() and RH.Ready(formSpell) then
+            RH.NoteShift("enter", formSpell)
+            return formSpell:Cast()
+        end
+    end
 
     if not RH.ValidTarget() then
         return nil
