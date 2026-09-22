@@ -21,7 +21,7 @@ railBg:SetColorTexture(0.035, 0.038, 0.045, 0.94)
 
 local function railBtn(text, x)
     local b = CreateFrame("Button", nil, rail)
-    b:SetSize(21, 14)
+    b:SetSize(32, 14)
     b:SetPoint("LEFT", x, 0)
     b.text = b:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     b.text:SetPoint("CENTER")
@@ -34,8 +34,7 @@ local function railBtn(text, x)
     return b
 end
 local modeToggle = railBtn("AUTO", 0)
-local cdToggle = railBtn("CDS", 21)
-local burstToggle = railBtn("GO", 42)
+local cdToggle = railBtn("CDS", 32)
 
 local function paintRail(btn, on, hotR, hotG, hotB)
     btn.text:SetTextColor(on and hotR or 0.50, on and hotG or 0.52, on and hotB or 0.55)
@@ -48,7 +47,6 @@ local function RefreshMiniToggles()
     modeToggle.text:SetText(mode == "single" and "ST" or (mode == "aoe" and "AOE" or "AUTO"))
     paintRail(modeToggle, mode == "aoe", 0.94, 0.72, 0.42)
     paintRail(cdToggle, d.cooldowns ~= false, 0.45, 0.86, 0.58)
-    paintRail(burstToggle, RH.Burst and true or false, 0.95, 0.42, 0.32)
 end
 RH.RefreshMiniToggles = RefreshMiniToggles
 
@@ -63,9 +61,6 @@ cdToggle:SetScript("OnClick", function()
     d.cooldowns = d.cooldowns == false
     RH.CDs = d.cooldowns ~= false
     RefreshMiniToggles()
-end)
-burstToggle:SetScript("OnClick", function()
-    NextCast_Burst()
 end)
 
 local well = CreateFrame("Frame", nil, f)

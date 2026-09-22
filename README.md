@@ -1,4 +1,4 @@
-# NextCast 6.3.3
+# NextCast 6.3.4
 
 Forever-native rotation engine for **WoW Forever 1–30**.
 
