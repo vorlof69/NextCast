@@ -173,18 +173,58 @@ for i = 1, 5 do
     pips[i] = p
 end
 
+local function toggleEnabled()
+    local d = RH.EnsureDB()
+    d.enabled = d.enabled == false
+    if RH.RefreshDashboard then
+        RH.RefreshDashboard()
+    end
+end
+
+local dragging
 f:SetScript("OnDragStart", function(s)
     if not RH.EnsureDB().locked then
+        dragging = true
         s:StartMoving()
     end
 end)
 f:SetScript("OnDragStop", function(s)
     s:StopMovingOrSizing()
+    dragging = nil
     RH.SaveFramePosition(s, "position")
 end)
 f:SetScript("OnMouseUp", function(_, b)
+    if dragging then
+        return
+    end
     if b == "RightButton" and RH.ToggleMenu then
         RH.ToggleMenu()
+    elseif b == "LeftButton" then
+        toggleEnabled()
+    end
+end)
+plate:EnableMouse(true)
+plate:SetScript("OnMouseUp", function(_, b)
+    if b == "RightButton" and RH.ToggleMenu then
+        RH.ToggleMenu()
+    else
+        toggleEnabled()
+    end
+end)
+plate:SetScript("OnEnter", function(s)
+    s:SetBackdropBorderColor(1, 0.88, 0.35, 1)
+    if GameTooltip then
+        GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+        GameTooltip:AddLine("NextCast", 1, 0.82, 0)
+        GameTooltip:AddLine("Left-click  On / Off", 1, 1, 1)
+        GameTooltip:AddLine("Right-click  Settings", 0.84, 0.86, 0.90)
+        GameTooltip:Show()
+    end
+end)
+plate:SetScript("OnLeave", function(s)
+    s:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
+    if GameTooltip then
+        GameTooltip:Hide()
     end
 end)
 
@@ -199,7 +239,8 @@ f:SetScript("OnUpdate", function(_, dt)
     end
     elapsed = 0
     RH.recommendationDirty = nil
-    local result = RH.MainRotation()
+    local paused = RH.EnsureDB().enabled == false
+    local result = (not paused) and RH.MainRotation() or nil
     RH.currentRecommendation = result
     local name, tex
     if result then
@@ -242,10 +283,9 @@ f:SetScript("OnUpdate", function(_, dt)
         end
     else
         showIdleClass()
-        pcall(icon.SetDesaturated, icon, false)
-        local paused = RH.EnsureDB().enabled == false
         nameText:SetText(paused and "Off" or "Ready")
         nameText:SetTextColor(paused and 0.85 or 1, paused and 0.22 or 0.82, paused and 0.12 or 0)
+        pcall(icon.SetDesaturated, icon, paused)
     end
     local points, pr, pg, pb
     if class == "WARRIOR" then
