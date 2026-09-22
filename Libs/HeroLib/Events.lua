@@ -252,6 +252,10 @@ f:SetScript("OnEvent", function(_, event, unit, a, b, c)
         if guid then
             HL.State.pending[guid] = record
         end
+        -- Heal is queued on the ally. Put the enemy back so the next GCD is DPS.
+        if RubimRH and RubimRH.RestoreAfterHeal then
+            RubimRH.RestoreAfterHeal(true)
+        end
         return
     end
     local guid = type(a) == "string" and not HL.Secret(a) and a

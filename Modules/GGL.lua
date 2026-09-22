@@ -206,9 +206,20 @@ end
 
 local lastColorIndex = 0
 function RH.UpdateTargetColorPixel(unit)
+    -- Action SetColorTarget: paint black when there is no heal unit, or when
+    -- that unit is already @target (GGL must not keep re-targeting).
+    if unit == "group" then
+        unit = "player"
+    end
     if unit == "mouseover" or unit == "focus" or unit == "target" then
         unit = RH.ResolveUnit and RH.ResolveUnit(unit) or unit
         if unit == "mouseover" or unit == "focus" or unit == "target" then
+            unit = nil
+        end
+    end
+    if unit then
+        local okSame, same = pcall(UnitIsUnit, "target", unit)
+        if okSame and not HeroLib.Secret(same) and same then
             unit = nil
         end
     end
@@ -464,9 +475,9 @@ function RH.PaintShownMain(result)
     PaintFlag(ccIcon, isCC == true)
     PaintFlag(kickIcon, kickTex ~= nil or isKick == true)
 
-    -- Hold ST/AoE while the player is mid-cast or mid-channel so the reader
-    -- does not clip the current spell by jumping to the next press.
-    if playerCasting and lastST then
+    -- Hold ST while casting OR while a heal snap is live so GGL has a full
+    -- frame of the heal texture after TargetUnit.
+    if (playerCasting or HeroLib.State.needHealSnapBack) and lastST then
         RH.UpdateTargetColorPixel(RH.healTarget)
         return
     end

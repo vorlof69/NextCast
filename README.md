@@ -1,4 +1,4 @@
-# NextCast 6.1.0
+# NextCast 6.2.0
 
 Forever-native rotation engine for **WoW Forever 1–30**.
 
@@ -17,9 +17,9 @@ Direct: https://github.com/vorlof69/NextCast/releases/download/v6.1.0/NextCast-6
 
 ## Healing
 
-GGLoader clicks ExtraIcon ST and presses the **raw spell** on the scanned bar. NextCast snaps the heal target onto `@target` (Action TargetColor + `TargetUnit`), then restores the enemy after the press.
+Action HealingEngine path: TargetColor paints the ally’s unique color so GGLoader can retarget. NextCast also snaps that unit onto `@target` so ExtraIcon still lands the **raw spell**, then restores the enemy when the heal is SENT.
 
-MotW / Thorns / heals **do not fire in Bear or Cat** — stay in form. Drop form once out of combat if you want the buff.
+Mouse over a friend to force that unit. MotW / heals do **not** fire in Bear or Cat.
 
 ## Overview
 

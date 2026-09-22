@@ -801,9 +801,9 @@ function RH.CastAllyBuff(spell, unit, buffName, seconds)
     return spell:Cast()
 end
 
--- GGLoader only presses the scanned bind. A heal/buff with an enemy targeted
--- fails. Snap the friendly unit onto target for ~0.8s, then TargetLastEnemy.
--- No macros — Action HealingEngine path: TargetColor + retarget.
+-- Action HealingEngine: paint TargetColor so GGL can retarget, AND snap the
+-- ally onto target so ExtraIcon still lands the raw spell. Restore only after
+-- the heal is SENT/SUCCEEDED (or 1.4s with no heal), never mid-press.
 function RH.SnapHealTarget(unit)
     if not unit or unit == "group" then
         return
@@ -812,21 +812,17 @@ function RH.SnapHealTarget(unit)
     if RH.ResolveUnit then
         resolved = RH.ResolveUnit(unit) or unit
     end
-    if resolved == "mouseover" or resolved == "focus" or resolved == "target" then
-        return
-    end
     local okSame, same = pcall(UnitIsUnit, "target", resolved)
     if okSame and not HL.Secret(same) and same then
+        HL.State.healSnapAt = HL.State.healSnapAt or GetTime()
         return
     end
-    if resolved == "player" then
-        local okAtk, atk = pcall(UnitCanAttack, "player", "target")
-        if not (okAtk and not HL.Secret(atk) and atk) then
-            return
-        end
-    end
     local okAtk, atk = pcall(UnitCanAttack, "player", "target")
-    if okAtk and not HL.Secret(atk) and atk then
+    local onEnemy = okAtk and not HL.Secret(atk) and atk
+    if onEnemy then
+        HL.State.needHealSnapBack = true
+        HL.State.healSnapAt = GetTime()
+    elseif resolved ~= "player" then
         HL.State.needHealSnapBack = true
         HL.State.healSnapAt = GetTime()
     end
@@ -842,7 +838,7 @@ function RH.RestoreAfterHeal(force)
             return
         end
         local at = HL.State.healSnapAt
-        if at and GetTime() - at < 0.85 then
+        if at and GetTime() - at < 1.4 then
             return
         end
     end
@@ -1009,8 +1005,13 @@ function RH.FriendlySnapshot(horizon)
                 hp = cached and HL.SafeNumber(cached.hp, nil) or nil
             end
             if not hp then
+                -- Forever often hides UnitHealth. Last-seen sample first.
+                -- Still unknown in combat: healer-efficient (65) so healers
+                -- act, tanks/DPS emergency bands do not spam.
                 if unit == "player" and ally:AffectingCombat() then
                     hp = 40
+                elseif RH.Player and RH.Player:AffectingCombat() then
+                    hp = 65
                 else
                     hp = 100
                 end
@@ -1311,6 +1312,18 @@ function RH.PickHealTarget(entries, pvp)
                 best, bestHP, bestScore = entry.unit, hp, score
             end
         end
+    end
+    -- Action HealingEngine delays target swaps so GGL is not flicked every tick.
+    local now = GetTime()
+    if best and HL.State.stickyHeal and HL.State.stickyHealUntil and HL.State.stickyHealUntil > now then
+        if not (bestHP and HL.State.stickyHealHP and bestHP < HL.State.stickyHealHP - 18) then
+            return HL.State.stickyHeal, HL.State.stickyHealHP or bestHP
+        end
+    end
+    if best then
+        HL.State.stickyHeal = best
+        HL.State.stickyHealHP = bestHP
+        HL.State.stickyHealUntil = now + 0.45
     end
     return best, bestHP
 end
