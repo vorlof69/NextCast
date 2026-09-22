@@ -151,7 +151,7 @@ local function showIdleClass()
     local c = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
     icon:ClearAllPoints()
     icon:SetAllPoints()
-    icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+    icon:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
     if c then
         icon:SetTexCoord(c[1], c[2], c[3], c[4])
         classLetter:Hide()
