@@ -3,6 +3,12 @@ local HC = HeroCache
 local function secret(v)
     return issecretvalue and issecretvalue(v)
 end
+local function compactName(n)
+    if type(n) ~= "string" then
+        return n
+    end
+    return (n:gsub("%s*%(?[Rr]ank%s*%d+%)?", ""):gsub("%s+$", ""):gsub("^%s+", ""))
+end
 
 function HC:SpellInfo(id)
     local cached = self.Spells[id]
@@ -30,6 +36,21 @@ function HC:SpellInfo(id)
         end
     end
     if not ok or secret(name) or type(name) ~= "string" or name == "" then
+        local alias = self.FallbackNames and self.FallbackNames[id]
+        if alias then
+            local live = self.KnownIDs and (self.KnownIDs[alias] or self.KnownIDs[compactName(alias)])
+            if live and live ~= id then
+                return self:SpellInfo(live)
+            end
+            local tex
+            if GetSpellTexture then
+                local tok, byName = pcall(GetSpellTexture, alias)
+                if tok and byName and not secret(byName) then
+                    tex = byName
+                end
+            end
+            return alias, tex
+        end
         return nil
     end
     if secret(texture) then
@@ -50,13 +71,6 @@ function HC:SpellInfo(id)
     cached = { name = name, texture = texture }
     self.Spells[id] = cached
     return name, texture
-end
-
-local function compactName(n)
-    if type(n) ~= "string" then
-        return n
-    end
-    return (n:gsub("%s*%(?[Rr]ank%s*%d+%)?", ""):gsub("%s+$", ""):gsub("^%s+", ""))
 end
 
 function HC:ScanSpellbook()

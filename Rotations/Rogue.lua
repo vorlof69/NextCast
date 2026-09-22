@@ -165,7 +165,13 @@ RubimRH.Rotation.SetAPL(4, function()
         local sndLifetime = tonumber(db.sndMinTTD) or 21
         local survivesSnD = (ttd and ttd >= sndLifetime) or (not ttd and durable and targetHP and targetHP >= 75)
         local sndActive = P:Buff("Slice and Dice") == true
-        if db.rogueSnD and not sndActive and (pvp or survivesSnD) and RH.Ready(S.SnD) then
+        if
+            db.rogueSnD ~= false
+            and not sndActive
+            and not RH.RecentlyBuffed("player", "Slice and Dice")
+            and (pvp or survivesSnD)
+            and RH.Ready(S.SnD)
+        then
             RH.NoteBuff("player", "Slice and Dice", 12)
             return S.SnD:Cast()
         end
@@ -186,11 +192,17 @@ RubimRH.Rotation.SetAPL(4, function()
                 return expose
             end
         end
-        if db.rogueEvis and RH.AbilityEnabled("Eviscerate") and S.Evis:IsAvailable() then
-            if RH.Ready(S.Evis, true) then
+        -- Eviscerate is the default dump. Do not gate it on IsUsableSpell —
+        -- Forever can report "not usable" with 5 CP while builders still work.
+        -- Wait on energy/range instead of falling through to Sinister Strike.
+        if db.rogueEvis ~= false and RH.AbilityEnabled("Eviscerate") then
+            local inMelee = melee or S.Evis:IsInRange()
+            if inMelee and ((energy or 0) >= 35 or S.Evis:IsUsable() == true) then
                 return S.Evis:Cast()
             end
-            return nil
+            if inMelee then
+                return nil
+            end
         end
     end
     if melee and RH.Ready(S.Riposte) then

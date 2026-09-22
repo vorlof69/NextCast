@@ -116,12 +116,28 @@ function Unit:Energy()
     return HL.SafeNumber(UnitPower(self.UnitID, 3), nil)
 end
 function Unit:ComboPoints()
-    local ok, value = pcall(GetComboPoints, "player", "target")
-    if ok and not HL.Secret(value) and type(value) == "number" then
-        HL.State.combo = math.max(0, math.min(5, value))
-        HL.State.comboConfirmedAt = GetTime()
+    local function consider(ok, value)
+        if ok and not HL.Secret(value) and type(value) == "number" then
+            HL.State.combo = math.max(0, math.min(5, value))
+            HL.State.comboConfirmedAt = GetTime()
+            return true
+        end
+        return false
     end
-    return HL.State.combo
+    if consider(pcall(GetComboPoints, "player", "target")) then
+        return HL.State.combo
+    end
+    if consider(pcall(GetComboPoints)) then
+        return HL.State.combo
+    end
+    if consider(pcall(UnitPower, "player", 4)) then
+        return HL.State.combo
+    end
+    local enum = Enum and Enum.PowerType and Enum.PowerType.ComboPoints
+    if enum and consider(pcall(UnitPower, "player", enum)) then
+        return HL.State.combo
+    end
+    return HL.State.combo or 0
 end
 local auraAliases = {
     ["Mark of the Wild"] = { "Gift of the Wild" },

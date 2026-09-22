@@ -21,10 +21,12 @@ function Spell:Texture()
 end
 function Spell:IsAvailable()
     local name = self:Name()
-    if not name then
-        return false
+    if name then
+        local compact = name:gsub("%s*%(?[Rr]ank%s*%d+%)?", ""):gsub("%s+$", "")
+        if HC.Known[name] or HC.Known[compact] then
+            return true
+        end
     end
-    -- The live spellbook is authoritative on Forever, where learned levels differ.
     return HC:IsKnown(self:ID())
 end
 function Spell:IsUsable()

@@ -150,6 +150,7 @@ pcall(f.RegisterEvent, f, "UI_ERROR_MESSAGE")
 pcall(f.RegisterEvent, f, "UNIT_POWER_UPDATE")
 pcall(f.RegisterEvent, f, "UNIT_POWER_FREQUENT")
 pcall(f.RegisterEvent, f, "PLAYER_COMBO_POINTS")
+pcall(f.RegisterEvent, f, "UNIT_COMBO_POINTS")
 f:SetScript("OnEvent", function(_, event, unit, a, b, c)
     if RubimRH then
         RubimRH.recommendationDirty = true
@@ -219,8 +220,12 @@ f:SetScript("OnEvent", function(_, event, unit, a, b, c)
         HL.InvalidateAuras()
         return
     end
-    if event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" or event == "PLAYER_COMBO_POINTS" then
-        if event == "PLAYER_COMBO_POINTS" or (unit == "player" and (a == "COMBO_POINTS" or a == nil)) then
+    if event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" or event == "PLAYER_COMBO_POINTS" or event == "UNIT_COMBO_POINTS" then
+        if
+            event == "PLAYER_COMBO_POINTS"
+            or event == "UNIT_COMBO_POINTS"
+            or (unit == "player" and (a == "COMBO_POINTS" or a == nil or a == 4))
+        then
             HL.Unit.Player:ComboPoints()
         end
         return

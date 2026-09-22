@@ -5,6 +5,10 @@ function RH.S(id)
     return HL.Spell(id)
 end
 function RH.Named(name, fallback)
+    if fallback and fallback > 0 then
+        HeroCache.FallbackNames = HeroCache.FallbackNames or {}
+        HeroCache.FallbackNames[fallback] = name
+    end
     local proxy = {}
     local function current()
         return HL.Spell(HeroCache:SpellID(name) or fallback or 0)
@@ -26,9 +30,23 @@ function RH.Named(name, fallback)
             return spell[methodName](spell, ...)
         end
     end
-    -- ExtraIcon / GGL profiles key off the classic rank-1 ID. Live Forever
-    -- rank IDs (e.g. Demo Shout 6190) show on the HUD but miss the bind.
+    proxy.Name = function()
+        return name
+    end
+    proxy.IsAvailable = function()
+        if HeroCache.Known and (HeroCache.Known[name] or HeroCache.Known[name:gsub("%s*%(?[Rr]ank%s*%d+%)?", "")]) then
+            return true
+        end
+        local live = HeroCache:SpellID(name) or fallback
+        return live and live > 0 and HeroCache:IsKnown(live)
+    end
+    -- Prefer the live spellbook ID so HUD/GGL see the rank you actually have.
+    -- Classic rank-1 is the fallback when Forever has not scanned yet.
     proxy.Cast = function()
+        local live = HeroCache:SpellID(name)
+        if live and live > 0 then
+            return live
+        end
         if fallback and fallback > 0 then
             return fallback
         end
