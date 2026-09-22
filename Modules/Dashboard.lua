@@ -21,7 +21,7 @@ end
 
 local frame = CreateFrame("Frame", "NextCastDashboard", UIParent, "BackdropTemplate")
 RH.MenuFrame = frame
-frame:SetSize(720, 428)
+frame:SetSize(800, 548)
 frame:SetPoint("CENTER")
 frame:SetFrameStrata("DIALOG")
 frame:SetClampedToScreen(true)
@@ -29,50 +29,50 @@ frame:SetMovable(true)
 frame:EnableMouse(true)
 frame:RegisterForDrag("LeftButton")
 frame:SetScript("OnDragStart", frame.StartMoving)
-frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
 frame:Hide()
 frame:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-frame:SetBackdropColor(0.043, 0.047, 0.055, 0.97)
-frame:SetBackdropBorderColor(0.16, 0.17, 0.19, 1)
+frame:SetBackdropColor(0.038, 0.041, 0.048, 0.98)
+frame:SetBackdropBorderColor(0.14, 0.15, 0.17, 1)
 local shadow = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
 shadow:SetTexture(WHITE)
-shadow:SetPoint("TOPLEFT", -10, 10)
-shadow:SetPoint("BOTTOMRIGHT", 10, -10)
-shadow:SetColorTexture(0, 0, 0, 0.45)
+shadow:SetPoint("TOPLEFT", -12, 12)
+shadow:SetPoint("BOTTOMRIGHT", 12, -12)
+shadow:SetColorTexture(0, 0, 0, 0.5)
+
 local header = frame:CreateTexture(nil, "BACKGROUND")
 header:SetTexture(WHITE)
 header:SetPoint("TOPLEFT", 1, -1)
 header:SetPoint("TOPRIGHT", -1, -1)
-header:SetHeight(58)
-header:SetColorTexture(0.055, 0.059, 0.068, 1)
+header:SetHeight(56)
+header:SetColorTexture(0.048, 0.052, 0.062, 1)
 local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
 local crestRing = frame:CreateTexture(nil, "ARTWORK")
 crestRing:SetTexture(WHITE)
-crestRing:SetSize(38, 38)
+crestRing:SetSize(36, 36)
 crestRing:SetPoint("TOPLEFT", 16, -10)
-crestRing:SetColorTexture(color.r, color.g, color.b, 0.35)
+crestRing:SetColorTexture(color.r, color.g, color.b, 0.32)
 local crest = frame:CreateTexture(nil, "ARTWORK")
-crest:SetSize(34, 34)
+crest:SetSize(32, 32)
 crest:SetPoint("CENTER", crestRing, "CENTER")
 crest:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
 if coords then
     crest:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
 end
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-title:SetPoint("TOPLEFT", 62, -14)
+title:SetPoint("TOPLEFT", 60, -12)
 title:SetText("NextCast")
-title:SetTextColor(0.93, 0.93, 0.91)
+title:SetTextColor(0.94, 0.94, 0.92)
 local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
-subtitle:SetTextColor(0.55, 0.56, 0.58)
+subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
+subtitle:SetTextColor(0.52, 0.54, 0.58)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-close:SetPoint("TOPRIGHT", -4, -6)
+close:SetPoint("TOPRIGHT", -2, -4)
 local accent = frame:CreateTexture(nil, "ARTWORK")
 accent:SetTexture(WHITE)
-accent:SetPoint("TOPLEFT", 1, -59)
-accent:SetPoint("TOPRIGHT", -1, -59)
-accent:SetHeight(1)
-accent:SetColorTexture(0.18, 0.19, 0.21, 1)
+accent:SetPoint("TOPLEFT", 1, -57)
+accent:SetPoint("TOPRIGHT", -1, -57)
+accent:SetHeight(2)
+accent:SetColorTexture(color.r * 0.55, color.g * 0.55, color.b * 0.55, 1)
 
 local function skinButton(parent, w, h, label)
     local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
@@ -95,27 +95,27 @@ local function skinButton(parent, w, h, label)
     end)
     return b
 end
-local active = skinButton(frame, 68, 22, "ON")
-active:SetPoint("TOPRIGHT", close, "TOPLEFT", -6, -8)
+local active = skinButton(frame, 64, 22, "ON")
+active:SetPoint("TOPRIGHT", close, "TOPLEFT", -4, -8)
 local aoe = skinButton(frame, 52, 22, "AOE")
 aoe:SetPoint("RIGHT", active, "LEFT", -6, 0)
 local cds = skinButton(frame, 52, 22, "CDS")
 cds:SetPoint("RIGHT", aoe, "LEFT", -6, 0)
 
 local tabBar = CreateFrame("Frame", nil, frame)
-tabBar:SetPoint("TOPLEFT", 12, -62)
-tabBar:SetPoint("TOPRIGHT", -12, -62)
-tabBar:SetHeight(32)
+tabBar:SetPoint("TOPLEFT", 14, -64)
+tabBar:SetPoint("TOPRIGHT", -14, -64)
+tabBar:SetHeight(30)
 local pages = {}
 local tabs = {}
 local selected = 1
-for i = 1, 2 do
+for i = 1, 3 do
     pages[i] = CreateFrame("Frame", nil, frame)
-    pages[i]:SetPoint("TOPLEFT", 14, -98)
-    pages[i]:SetPoint("BOTTOMRIGHT", -14, 32)
+    pages[i]:SetPoint("TOPLEFT", 14, -100)
+    pages[i]:SetPoint("BOTTOMRIGHT", -14, 28)
     pages[i]:Hide()
 end
-local labels = { "Overview", "Abilities" }
+local labels = { "Play", "Rotation", "Spells" }
 local function SelectTab(index)
     selected = index
     for i, page in ipairs(pages) do
@@ -123,25 +123,25 @@ local function SelectTab(index)
     end
     for i, tab in ipairs(tabs) do
         local on = i == index
-        tab:SetBackdropColor(on and 0.09 or 0.055, on and 0.095 or 0.059, on and 0.11 or 0.068, 1)
-        tab:SetBackdropBorderColor(on and 0.22 or 0.14, on and 0.23 or 0.15, on and 0.25 or 0.16, 1)
-        tab.text:SetTextColor(on and 0.94 or 0.58, on and 0.94 or 0.59, on and 0.92 or 0.60)
+        tab:SetBackdropColor(on and 0.09 or 0.05, on and 0.095 or 0.054, on and 0.11 or 0.062, 1)
+        tab:SetBackdropBorderColor(on and 0.22 or 0.13, on and 0.23 or 0.14, on and 0.25 or 0.15, 1)
+        tab.text:SetTextColor(on and 0.95 or 0.55, on and 0.95 or 0.56, on and 0.93 or 0.58)
         if tab.line then
             tab.line:SetShown(on)
         end
     end
-    if index == 2 and RH.RefreshClassDashboard then
+    if index == 3 and RH.RefreshClassDashboard then
         RH.RefreshClassDashboard()
     end
 end
 for i, label in ipairs(labels) do
-    local b = skinButton(tabBar, 340, 28, label)
-    b:SetPoint("LEFT", (i - 1) * 348, 0)
+    local b = skinButton(tabBar, 250, 28, label)
+    b:SetPoint("LEFT", (i - 1) * 258, 0)
     b.line = b:CreateTexture(nil, "OVERLAY")
     b.line:SetTexture(WHITE)
     b.line:SetHeight(2)
-    b.line:SetPoint("BOTTOMLEFT", 10, 0)
-    b.line:SetPoint("BOTTOMRIGHT", -10, 0)
+    b.line:SetPoint("BOTTOMLEFT", 12, 0)
+    b.line:SetPoint("BOTTOMRIGHT", -12, 0)
     b.line:SetColorTexture(color.r, color.g, color.b, 1)
     b.line:Hide()
     b:SetScript("OnClick", function()
@@ -152,71 +152,179 @@ end
 
 local function card(parent, titleText, top, height)
     local c = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-    c:SetPoint("TOPLEFT", 8, top)
-    c:SetPoint("TOPRIGHT", -8, top)
+    c:SetPoint("TOPLEFT", 4, top)
+    c:SetPoint("TOPRIGHT", -4, top)
     c:SetHeight(height)
     c:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    c:SetBackdropColor(0.062, 0.066, 0.076, 1)
-    c:SetBackdropBorderColor(0.15, 0.16, 0.18, 1)
+    c:SetBackdropColor(0.055, 0.059, 0.068, 1)
+    c:SetBackdropBorderColor(0.14, 0.15, 0.17, 1)
     local titleTextFS = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    titleTextFS:SetPoint("TOPLEFT", 16, -12)
+    titleTextFS:SetPoint("TOPLEFT", 16, -11)
     titleTextFS:SetText(titleText)
-    titleTextFS:SetTextColor(0.78, 0.79, 0.80)
+    titleTextFS:SetTextColor(0.72, 0.74, 0.76)
     local line = c:CreateTexture(nil, "ARTWORK")
     line:SetTexture(WHITE)
-    line:SetPoint("TOPLEFT", 14, -32)
-    line:SetPoint("TOPRIGHT", -14, -32)
+    line:SetPoint("TOPLEFT", 14, -30)
+    line:SetPoint("TOPRIGHT", -14, -30)
     line:SetHeight(1)
-    line:SetColorTexture(0.18, 0.19, 0.21, 1)
+    line:SetColorTexture(0.16, 0.17, 0.19, 1)
     return c
 end
-local function toggle(parent, label, key, x, y, helpText)
+
+local function tip(owner, titleLine, body)
+    if not GameTooltip then
+        return
+    end
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:AddLine(titleLine, 1, 0.82, 0.35)
+    if body then
+        GameTooltip:AddLine(body, 0.90, 0.91, 0.93, true)
+    end
+    GameTooltip:Show()
+end
+
+local function switchOn(d, w)
+    if w.defaultOn then
+        return d[w.key] ~= false
+    end
+    return d[w.key] == true
+end
+
+local function switch(parent, label, key, x, y, helpText, defaultOn)
     local b = CreateFrame("Button", nil, parent)
-    b:SetSize(330, 24)
+    b:SetSize(360, 28)
     b:SetPoint("TOPLEFT", x, y)
-    b.box = CreateFrame("Frame", nil, b, "BackdropTemplate")
-    b.box:SetSize(16, 16)
-    b.box:SetPoint("LEFT")
-    b.box:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    b.box:SetBackdropColor(0.04, 0.045, 0.052, 1)
-    b.box:SetBackdropBorderColor(0.28, 0.29, 0.31, 1)
-    b.mark = b.box:CreateTexture(nil, "OVERLAY")
-    b.mark:SetTexture(WHITE)
-    b.mark:SetSize(8, 8)
-    b.mark:SetPoint("CENTER")
-    b.mark:SetColorTexture(color.r, color.g, color.b, 1)
-    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    b.text:SetPoint("LEFT", b.box, "RIGHT", 8, 0)
-    b.text:SetText(label)
     b.key = key
-    b.helpText = helpText
+    b.isSwitch = true
+    b.defaultOn = defaultOn ~= false
+    b.track = CreateFrame("Frame", nil, b, "BackdropTemplate")
+    b.track:SetSize(36, 18)
+    b.track:SetPoint("LEFT")
+    b.track:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
+    b.knob = b.track:CreateTexture(nil, "OVERLAY")
+    b.knob:SetTexture(WHITE)
+    b.knob:SetSize(12, 12)
+    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    b.text:SetPoint("LEFT", b.track, "RIGHT", 10, 0)
+    b.text:SetText(label)
     b:SetScript("OnClick", function()
         local d = RH.EnsureDB()
-        d[key] = not d[key]
+        local on = switchOn(d, b)
+        d[key] = not on
         RH.RefreshDashboard()
     end)
     b:SetScript("OnEnter", function()
         b.text:SetTextColor(1, 0.88, 0.58)
-        if helpText and GameTooltip then
-            GameTooltip:SetOwner(b, "ANCHOR_RIGHT")
-            GameTooltip:AddLine(label, 1, 0.82, 0.35)
-            GameTooltip:AddLine(helpText, 0.92, 0.92, 0.94, true)
-            GameTooltip:Show()
+        if helpText then
+            tip(b, label, helpText)
         end
     end)
     b:SetScript("OnLeave", function()
-        b.text:SetTextColor(0.84, 0.86, 0.90)
+        b.text:SetTextColor(0.86, 0.87, 0.90)
         if GameTooltip then
             GameTooltip:Hide()
         end
     end)
     return b
 end
+
+local function slider(parent, label, key, minV, maxV, step, x, y, w, suffix)
+    local wrap = CreateFrame("Frame", nil, parent)
+    wrap:SetSize(w, 44)
+    wrap:SetPoint("TOPLEFT", x, y)
+    wrap.key = key
+    wrap.isSlider = true
+    wrap.minV, wrap.maxV, wrap.step = minV, maxV, step or 1
+    wrap.suffix = suffix or ""
+    local cap = wrap:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    cap:SetPoint("TOPLEFT", 0, 0)
+    cap:SetText(string.upper(label))
+    cap:SetTextColor(0.52, 0.54, 0.58)
+    wrap.valueText = wrap:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    wrap.valueText:SetPoint("TOPRIGHT", 0, 0)
+    wrap.track = CreateFrame("Frame", nil, wrap, "BackdropTemplate")
+    wrap.track:SetHeight(8)
+    wrap.track:SetPoint("BOTTOMLEFT", 0, 6)
+    wrap.track:SetPoint("BOTTOMRIGHT", 0, 6)
+    wrap.track:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
+    wrap.track:SetBackdropColor(0.04, 0.045, 0.052, 1)
+    wrap.track:SetBackdropBorderColor(0.20, 0.21, 0.23, 1)
+    wrap.fill = wrap.track:CreateTexture(nil, "ARTWORK")
+    wrap.fill:SetTexture(WHITE)
+    wrap.fill:SetPoint("TOPLEFT", 1, -1)
+    wrap.fill:SetPoint("BOTTOMLEFT", 1, 1)
+    wrap.fill:SetColorTexture(color.r * 0.7, color.g * 0.7, color.b * 0.7, 1)
+    wrap.thumb = CreateFrame("Button", nil, wrap.track, "BackdropTemplate")
+    wrap.thumb:SetSize(14, 14)
+    wrap.thumb:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
+    wrap.thumb:SetBackdropColor(0.92, 0.93, 0.94, 1)
+    wrap.thumb:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+    local function clamp(v)
+        v = tonumber(v) or minV
+        v = math.max(minV, math.min(maxV, v))
+        if step and step > 0 then
+            v = math.floor((v - minV) / step + 0.5) * step + minV
+        end
+        return v
+    end
+    function wrap:Paint(v)
+        v = clamp(v)
+        local pct = (v - minV) / math.max(1, maxV - minV)
+        local tw = wrap.track:GetWidth() or w
+        wrap.fill:SetWidth(math.max(2, (tw - 2) * pct))
+        wrap.thumb:ClearAllPoints()
+        wrap.thumb:SetPoint("CENTER", wrap.track, "LEFT", 7 + (tw - 14) * pct, 0)
+        wrap.valueText:SetText((wrap.step < 1 and string.format("%.1f", v) or tostring(v)) .. wrap.suffix)
+    end
+    local function fromCursor()
+        local mx = GetCursorPosition()
+        local scale = wrap.track:GetEffectiveScale()
+        local left = wrap.track:GetLeft() or 0
+        local tw = wrap.track:GetWidth() or w
+        local pct = ((mx / scale) - left) / math.max(1, tw)
+        pct = math.max(0, math.min(1, pct))
+        return clamp(minV + pct * (maxV - minV))
+    end
+    wrap.track:EnableMouse(true)
+    wrap.dragging = false
+    local function stopDrag()
+        wrap.dragging = false
+        wrap.track:SetScript("OnUpdate", nil)
+    end
+    wrap.track:SetScript("OnMouseDown", function()
+        wrap.dragging = true
+        wrap:Apply(fromCursor())
+        wrap.track:SetScript("OnUpdate", function()
+            local down = true
+            if IsMouseButtonDown then
+                local ok, v = pcall(IsMouseButtonDown, "LeftButton")
+                if ok then
+                    down = v and true or false
+                end
+            end
+            if not down then
+                stopDrag()
+                return
+            end
+            wrap:Apply(fromCursor())
+        end)
+    end)
+    wrap.thumb:SetScript("OnMouseDown", function()
+        wrap.track:GetScript("OnMouseDown")(wrap.track)
+    end)
+    function wrap:Apply(v)
+        RH.EnsureDB()[key] = clamp(v)
+        self:Paint(RH.EnsureDB()[key])
+    end
+    return wrap
+end
+
 local openDropdown
 local function dropdown(parent, label, key, options, x, y, w, onSelect)
     local caption = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     caption:SetPoint("TOPLEFT", x, y)
     caption:SetText(label or "")
+    caption:SetTextColor(0.52, 0.54, 0.58)
     if label == "" or not label then
         caption:Hide()
     end
@@ -238,17 +346,14 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
     chevron:SetPoint("RIGHT", -10, 0)
     chevron:SetText("v")
     chevron:SetTextColor(0.50, 0.52, 0.55)
-    b.chevron = chevron
-    local list = CreateFrame("Frame", nil, b, "BackdropTemplate")
-    list:SetPoint("TOPLEFT", b, "BOTTOMLEFT", 0, -2)
+    local list = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+    list:SetFrameStrata("TOOLTIP")
     list:SetSize(w, #options * 27 + 8)
-    list:SetFrameLevel(b:GetFrameLevel() + 20)
     list:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
     list:SetBackdropColor(0.012, 0.017, 0.024, 0.99)
     list:SetBackdropBorderColor(color.r * 0.7, color.g * 0.7, color.b * 0.7, 1)
     list:Hide()
     b.dropdown = list
-    local rows = {}
     for i, option in ipairs(options) do
         local value, text = option[1], option[2]
         local row = CreateFrame("Button", nil, list, "BackdropTemplate")
@@ -279,13 +384,15 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
             openDropdown = nil
             RH.RefreshDashboard()
         end)
-        rows[#rows + 1] = row
+        if not b.rows then
+            b.rows = {}
+        end
+        b.rows[#b.rows + 1] = row
     end
-    b.rows = rows
     local function refreshRows()
         local db = RH.EnsureDB()
         local current = key == "spec" and db.specMode == "auto" and "Automatic" or db[key]
-        for _, row in ipairs(rows) do
+        for _, row in ipairs(b.rows) do
             row.text:SetText((row.value == current and "✓  " or "    ") .. row.label)
         end
     end
@@ -294,80 +401,155 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
             openDropdown:Hide()
         end
         refreshRows()
-        list:SetShown(not list:IsShown())
-        openDropdown = list:IsShown() and list or nil
+        if list:IsShown() then
+            list:Hide()
+            openDropdown = nil
+        else
+            list:ClearAllPoints()
+            list:SetPoint("TOPLEFT", b, "BOTTOMLEFT", 0, -2)
+            list:Show()
+            openDropdown = list
+        end
     end)
     return b
 end
-local generalControls = {}
-local play = card(pages[1], "SPECIALIZATION", -4, 118)
+
+local widgets = {}
+local function track(w)
+    widgets[#widgets + 1] = w
+    return w
+end
+
+-- PLAY
+local play = card(pages[1], "SPECIALIZATION", -2, 112)
 local specOptions = {}
 for _, name in ipairs(specs[token] or { "Automatic", "Leveling" }) do
     specOptions[#specOptions + 1] = { name, name }
 end
-generalControls[#generalControls + 1] = dropdown(
-    play,
-    "SPEC",
-    "spec",
-    specOptions,
-    18,
-    -42,
-    660,
-    function(value)
-        RH.SetSpec(value)
-    end
-)
+track(dropdown(play, "SPEC", "spec", specOptions, 16, -40, 740, function(value)
+    RH.SetSpec(value)
+end))
 local engineReadout = play:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-engineReadout:SetPoint("TOPLEFT", 18, -96)
-engineReadout:SetWidth(660)
+engineReadout:SetPoint("TOPLEFT", 16, -90)
+engineReadout:SetWidth(740)
 engineReadout:SetJustifyH("LEFT")
-engineReadout:SetTextColor(0.58, 0.62, 0.68)
+engineReadout:SetTextColor(0.56, 0.60, 0.66)
 
-local switches = card(pages[1], "SWITCHES", -130, 168)
-generalControls[#generalControls + 1] =
-    toggle(switches, "Cooldowns", "cooldowns", 20, -48, "Racials and class cooldowns when Burst is on.")
-generalControls[#generalControls + 1] =
-    toggle(switches, "Interrupts", "interrupts", 360, -48, "Kick when a hostile cast is readable.")
-generalControls[#generalControls + 1] = toggle(
-    switches,
-    "Healing",
-    "healing",
-    20,
-    -86,
-    "On = role-aware heals. Healers full kit, tanks self-sustain, DPS emergency only."
-)
-generalControls[#generalControls + 1] =
-    toggle(switches, "Defensives", "defensives", 360, -86, "Personal survival at low health.")
-generalControls[#generalControls + 1] =
-    toggle(switches, "Lock icon", "locked", 20, -124, "Prevent dragging the recommendation icon.")
-local scaleOptions = {}
-for _, value in ipairs({ 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2 }) do
-    scaleOptions[#scaleOptions + 1] = { value, tostring(math.floor(value * 100 + 0.5)) .. "%" }
+local engine = card(pages[1], "ENGINE", -124, 168)
+track(switch(engine, "Cooldowns", "cooldowns", 16, -44, "Racials and class cooldowns when Burst is on.", true))
+track(switch(engine, "Interrupts", "interrupts", 400, -44, "Kick when a hostile cast is readable.", true))
+track(switch(engine, "Healing", "healing", 16, -84, "Role-aware heals. Healers full kit, tanks self-sustain, DPS emergency only.", true))
+track(switch(engine, "Defensives", "defensives", 400, -84, "Personal survival at low health.", true))
+track(switch(engine, "Maintain buffs", "maintainBuffs", 16, -124, "Keep class buffs, auras, and aspects up.", true))
+track(switch(engine, "DoTs", "useDots", 400, -124, "Keep bleeds and magic dots on lasting targets.", true))
+
+local display = card(pages[1], "DISPLAY", -302, 92)
+track(switch(display, "Lock HUD", "locked", 16, -44, "Prevent dragging the recommendation icon.", false))
+track(slider(display, "HUD scale", "scale", 0.6, 2.0, 0.1, 400, -40, 340, "x"))
+
+-- ROTATION
+local rotScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameTemplate")
+rotScroll:SetPoint("TOPLEFT", 0, 0)
+rotScroll:SetPoint("BOTTOMRIGHT", -22, 0)
+local rotContent = CreateFrame("Frame", nil, rotScroll)
+rotContent:SetSize(746, 620)
+rotScroll:SetScrollChild(rotContent)
+
+local ctxKey = string.lower(token) .. "Context"
+local combat = card(rotContent, "COMBAT", -2, 168)
+track(dropdown(combat, "CONTEXT", ctxKey, {
+    { "auto", "Auto — battleground / arena = PvP" },
+    { "pve", "PvE" },
+    { "pvp", "PvP" },
+}, 16, -40, 350))
+track(slider(combat, "Emergency HP", "emergencyHealHP", 15, 70, 1, 390, -40, 330, "%"))
+track(slider(combat, "Defensive HP", "defensiveHP", 10, 70, 1, 16, -96, 350, "%"))
+track(slider(combat, "Dot min TTD", "dotMinTTD", 4, 20, 1, 390, -96, 330, "s"))
+
+local sustain = card(rotContent, "RESOURCES  ·  HEALING", -180, 168)
+track(slider(sustain, "Mana reserve", "manaReserve", 0, 60, 5, 16, -40, 350, "%"))
+track(slider(sustain, "Efficient heal HP", "efficientHealHP", 40, 95, 1, 390, -40, 330, "%"))
+track(switch(sustain, "Mouseover heals", "healMouseover", 16, -104, "Prefer the friend under your cursor.", true))
+track(switch(sustain, "Resource logic", "resourceLogic", 400, -104, "Hold spenders when you would go empty.", true))
+
+local kit = card(rotContent, string.upper(className) .. "  KIT", -358, 240)
+if token == "ROGUE" then
+    track(dropdown(kit, "OPENER", "rogueOpener", {
+        { "auto", "Auto" },
+        { "cheap", "Cheap Shot" },
+        { "garrote", "Garrote" },
+        { "ambush", "Ambush" },
+    }, 16, -40, 350))
+    track(slider(kit, "Eviscerate CP", "evisCP", 1, 5, 1, 390, -40, 330, " CP"))
+    track(slider(kit, "Stealth range", "stealthRange", 8, 40, 1, 16, -96, 350, " yd"))
+    track(switch(kit, "Slice and Dice", "rogueSnD", 16, -160, nil, true))
+    track(switch(kit, "Rupture", "rogueRupture", 400, -160, nil, true))
+elseif token == "WARRIOR" then
+    track(slider(kit, "Heroic Strike rage", "heroicRage", 20, 90, 5, 16, -40, 350, ""))
+    track(slider(kit, "Sunder stacks", "sunderStacks", 1, 5, 1, 390, -40, 330, ""))
+    track(switch(kit, "Battle Shout", "warriorShout", 16, -104, nil, true))
+    track(switch(kit, "Taunt", "warriorTaunt", 400, -104, nil, true))
+    track(switch(kit, "Rend", "warriorRend", 16, -144, nil, true))
+    track(switch(kit, "Victory Rush", "warriorVictory", 400, -144, nil, true))
+elseif token == "PALADIN" then
+    track(switch(kit, "Blessings", "paladinBlessings", 16, -44, nil, true))
+    track(switch(kit, "Auras", "paladinAuras", 400, -44, nil, true))
+    track(switch(kit, "Seals", "paladinSeals", 16, -84, nil, true))
+    track(switch(kit, "Group heals", "paladinGroupHeals", 400, -84, nil, true))
+    track(slider(kit, "Flash of Light HP", "paladinFlashHP", 20, 80, 1, 16, -128, 350, "%"))
+    track(slider(kit, "Holy Light HP", "paladinHolyLightHP", 40, 95, 1, 390, -128, 330, "%"))
+elseif token == "HUNTER" then
+    track(switch(kit, "Pet", "hunterPet", 16, -44, nil, true))
+    track(switch(kit, "Concussive Shot", "hunterConcussive", 400, -44, nil, true))
+    track(slider(kit, "Mend Pet HP", "hunterPetHealHP", 20, 90, 1, 16, -96, 350, "%"))
+    track(slider(kit, "Arcane Shot mana", "hunterArcaneMana", 5, 60, 5, 390, -96, 330, "%"))
+elseif token == "PRIEST" then
+    track(switch(kit, "Group heals", "priestGroupHeals", 16, -44, nil, true))
+    track(switch(kit, "HoTs", "priestHoTs", 400, -44, nil, true))
+    track(switch(kit, "Dispel", "priestDispel", 16, -84, nil, true))
+    track(slider(kit, "Flash Heal HP", "priestFlashHP", 20, 80, 1, 16, -128, 350, "%"))
+    track(slider(kit, "Shield HP", "priestShieldHP", 30, 90, 1, 390, -128, 330, "%"))
+elseif token == "SHAMAN" then
+    track(switch(kit, "Totems", "shamanTotems", 16, -44, nil, true))
+    track(switch(kit, "Group heals", "shamanGroupHeals", 400, -44, nil, true))
+    track(slider(kit, "Chain Heal HP", "shamanChainHP", 40, 90, 1, 16, -96, 350, "%"))
+    track(slider(kit, "Totem mana", "shamanTotemMana", 10, 70, 5, 390, -96, 330, "%"))
+elseif token == "MAGE" then
+    track(switch(kit, "Crowd control", "mageControl", 16, -44, nil, true))
+    track(slider(kit, "Evocation mana", "mageEvocationMana", 5, 40, 5, 16, -96, 350, "%"))
+    track(slider(kit, "AoE mana", "mageAoEMana", 10, 70, 5, 390, -96, 330, "%"))
+elseif token == "WARLOCK" then
+    track(switch(kit, "Pet", "warlockPet", 16, -44, nil, true))
+    track(slider(kit, "Life Tap mana", "warlockLifeTapMana", 5, 50, 5, 16, -96, 350, "%"))
+    track(slider(kit, "Drain Life HP", "warlockDrainLifeHP", 20, 70, 1, 390, -96, 330, "%"))
+elseif token == "DRUID" then
+    track(switch(kit, "Prowl", "druidProwl", 16, -44, nil, true))
+    track(switch(kit, "HoTs", "druidHoTs", 400, -44, nil, true))
+    track(switch(kit, "Direct heals", "druidDirectHeals", 16, -84, nil, true))
+    track(switch(kit, "Group heals", "druidGroupHeals", 400, -84, nil, true))
+    track(slider(kit, "Rejuvenation HP", "druidRejuvenationHP", 50, 95, 1, 16, -128, 350, "%"))
+    track(slider(kit, "Regrowth HP", "druidRegrowthHP", 25, 80, 1, 390, -128, 330, "%"))
 end
-local scaleCaption = switches:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-scaleCaption:SetPoint("TOPLEFT", 360, -118)
-scaleCaption:SetText("ICON SCALE")
-scaleCaption:SetTextColor(0.52, 0.54, 0.58)
-generalControls[#generalControls + 1] = dropdown(switches, "", "scale", scaleOptions, 360, -132, 276)
 
-local abilitiesScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameTemplate")
+-- SPELLS
+local abilitiesScroll = CreateFrame("ScrollFrame", nil, pages[3], "UIPanelScrollFrameTemplate")
 abilitiesScroll:SetPoint("TOPLEFT", 0, 0)
-abilitiesScroll:SetPoint("BOTTOMRIGHT", -26, 0)
+abilitiesScroll:SetPoint("BOTTOMRIGHT", -22, 0)
 local abilitiesContent = CreateFrame("Frame", nil, abilitiesScroll)
-abilitiesContent:SetSize(726, 580)
+abilitiesContent:SetSize(746, 580)
 abilitiesScroll:SetScrollChild(abilitiesContent)
 
-local classStatus = card(abilitiesContent, token .. " SPELLS", -4, 86)
+local classStatus = card(abilitiesContent, token .. "  SPELLS", -2, 78)
 local classStatusText = classStatus:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-classStatusText:SetPoint("TOPLEFT", 18, -42)
-classStatusText:SetWidth(680)
+classStatusText:SetPoint("TOPLEFT", 16, -40)
+classStatusText:SetWidth(700)
 classStatusText:SetJustifyH("LEFT")
 local startHint = classStatus:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-startHint:SetPoint("TOPLEFT", 18, -62)
-startHint:SetWidth(680)
+startHint:SetPoint("TOPLEFT", 16, -58)
+startHint:SetWidth(700)
 startHint:SetJustifyH("LEFT")
-startHint:SetText("Turn a spell off to never recommend it. Everything else is automatic from role, spec, and level.")
-local listCard = card(abilitiesContent, "LEARNED ROTATION", -100, 400)
+startHint:SetText("Off = never recommend. Role, spec, and level still decide when it fires.")
+local listCard = card(abilitiesContent, "LEARNED ROTATION", -90, 400)
 local classRows = {}
 local classPage = 1
 local CLASS_PER_PAGE = 20
@@ -375,8 +557,8 @@ for i = 1, CLASS_PER_PAGE do
     local col = (i - 1) % 2
     local row = math.floor((i - 1) / 2)
     local b = CreateFrame("Button", nil, listCard)
-    b:SetSize(330, 31)
-    b:SetPoint("TOPLEFT", 18 + col * 350, -46 - row * 35)
+    b:SetSize(340, 31)
+    b:SetPoint("TOPLEFT", 16 + col * 356, -44 - row * 34)
     b.icon = b:CreateTexture(nil, "ARTWORK")
     b.icon:SetSize(22, 22)
     b.icon:SetPoint("LEFT")
@@ -392,8 +574,6 @@ for i = 1, CLASS_PER_PAGE do
     b.mark:SetSize(20, 20)
     b.mark:SetPoint("CENTER")
     b.mark:SetVertexColor(color.r, color.g, color.b)
-    -- Output-icon mapper, inline on the same row as the enable/disable box
-    -- instead of a separate popup -- one list, one click each.
     b.map = CreateFrame("Button", nil, b, "BackdropTemplate")
     b.map:SetSize(34, 16)
     b.map:SetPoint("RIGHT", b.box, "LEFT", -6, 0)
@@ -419,10 +599,6 @@ for i = 1, CLASS_PER_PAGE do
     classRows[i] = b
 end
 
--- Shared output-icon picker popup, opened next to whichever row's map
--- button was clicked. Assign the ability's normal spell icon or one of the
--- Universal 1-10 slots (Universal textures match the installed GGL reader;
--- each Universal slot also needs a key assigned in GGL).
 local iconPicker = CreateFrame("Frame", nil, abilitiesContent, "BackdropTemplate")
 iconPicker:SetSize(230, 150)
 iconPicker:SetFrameStrata("TOOLTIP")
@@ -487,34 +663,31 @@ for _, row in ipairs(classRows) do
     end)
     row.map:SetScript("OnEnter", function(s)
         s:SetBackdropBorderColor(color.r, color.g, color.b, 1)
-        GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
-        GameTooltip:AddLine(row.entry and row.entry[2] or "Output icon", 1, 0.82, 0.35)
-        GameTooltip:AddLine("Left-click: choose Default or Universal 1-10", 1, 1, 1)
-        GameTooltip:AddLine("Right-click: reset to the spell icon", 0.72, 0.75, 0.82)
-        GameTooltip:Show()
+        tip(s, row.entry and row.entry[2] or "Output icon", "Left: Default or Universal 1–10. Right: reset.")
     end)
     row.map:SetScript("OnLeave", function(s)
         s:SetBackdropBorderColor(0.30, 0.32, 0.36, 1)
-        GameTooltip:Hide()
+        if GameTooltip then
+            GameTooltip:Hide()
+        end
     end)
 end
-pages[2]:HookScript("OnHide", function()
+pages[3]:HookScript("OnHide", function()
     iconPicker:Hide()
 end)
 local classPrev = skinButton(abilitiesContent, 80, 24, "PREVIOUS")
-classPrev:SetPoint("TOPLEFT", listCard, "BOTTOMLEFT", 10, -14)
+classPrev:SetPoint("TOPLEFT", listCard, "BOTTOMLEFT", 10, -12)
 local classNext = skinButton(abilitiesContent, 80, 24, "NEXT")
-classNext:SetPoint("TOPRIGHT", listCard, "BOTTOMRIGHT", -10, -14)
+classNext:SetPoint("TOPRIGHT", listCard, "BOTTOMRIGHT", -10, -12)
 local classPageText = abilitiesContent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-classPageText:SetPoint("TOP", classPrev, "TOP", 0, -7)
+classPageText:SetPoint("TOP", classPrev, "TOP", 350, -6)
 function RH.RefreshClassDashboard()
     local all = RH.Abilities[token] or {}
     local d = RH.EnsureDB()
     local list = {}
     local learned = 0
     for _, e in ipairs(all) do
-        local known = RH.AbilityStatus(e)
-        if known then
+        if RH.AbilityStatus(e) then
             learned = learned + 1
         end
         list[#list + 1] = e
@@ -525,11 +698,11 @@ function RH.RefreshClassDashboard()
     classStatusText:SetText(
         "Level "
             .. tostring(UnitLevel("player") or "?")
-            .. "   |   "
+            .. "   ·   "
             .. tostring(learned)
             .. "/"
             .. tostring(#all)
-            .. " learned   |   "
+            .. " learned   ·   "
             .. tostring(d.spec or "Leveling")
     )
     for i, b in ipairs(classRows) do
@@ -544,7 +717,7 @@ function RH.RefreshClassDashboard()
             pcall(b.icon.SetDesaturated, b.icon, not known)
             b.name:SetText(e[2])
             b.name:SetTextColor(enabled and 0.88 or 0.42, enabled and 0.89 or 0.43, enabled and 0.92 or 0.46)
-            b.role:SetText((e[3] or "Ability") .. (known and "  |  learned" or "  |  locked"))
+            b.role:SetText((e[3] or "Ability") .. (known and "  ·  learned" or "  ·  locked"))
             b.mark:SetShown(enabled)
             local choice = RH.IconChoice(e[2])
             b.map.text:SetText(choice and ("U" .. choice) or "ICON")
@@ -567,19 +740,13 @@ classNext:SetScript("OnClick", function()
     RH.RefreshClassDashboard()
 end)
 
-
 function RH.RefreshDashboard()
     local d = RH.EnsureDB()
     local enabled = d.enabled ~= false
     active.text:SetText(enabled and "ON" or "OFF")
     active.text:SetTextColor(enabled and 0.45 or 0.92, enabled and 0.86 or 0.42, enabled and 0.58 or 0.40)
     active.held = enabled
-    active:SetBackdropBorderColor(
-        enabled and 0.22 or 0.45,
-        enabled and 0.42 or 0.18,
-        enabled and 0.28 or 0.16,
-        1
-    )
+    active:SetBackdropBorderColor(enabled and 0.22 or 0.45, enabled and 0.42 or 0.18, enabled and 0.28 or 0.16, 1)
     local mode = d.mode or "auto"
     aoe.text:SetText(mode == "single" and "ST" or (mode == "aoe" and "AOE" or "AUTO"))
     aoe.text:SetTextColor(RH.AoE and 0.94 or 0.72, RH.AoE and 0.72 or 0.73, RH.AoE and 0.42 or 0.74)
@@ -591,91 +758,60 @@ function RH.RefreshDashboard()
     )
     subtitle:SetText(
         string.upper(className)
-            .. "  /  LEVEL "
+            .. "  ·  "
             .. tostring(UnitLevel("player") or "?")
-            .. "  /  "
+            .. "  ·  "
             .. string.upper(d.spec or "LEVELING")
-            .. "  /  FOREVER"
     )
     if engineReadout then
         local role = RH.HealRole and RH.HealRole() or "dps"
-        local ctx = d[string.lower(token) .. "Context"]
+        local ctx = d[ctxKey]
         local pvp = RH.IsPvPContext and RH.IsPvPContext(ctx)
         local bands = RH.HealBands and RH.HealBands(pvp)
             or { emergency = d.emergencyHealHP or 35, efficient = d.efficientHealHP or 70 }
-        local kit = role == "healer" and ("full kit below " .. tostring(bands.efficient) .. "%")
+        local kitText = role == "healer" and ("full kit below " .. tostring(bands.efficient) .. "%")
             or (role == "tank" and "self-sustain when dying")
             or "emergency saves only"
-        engineReadout:SetText(
-            string.upper(role)
-                .. "  ·  "
-                .. (pvp and "PVP" or "PVE")
-                .. "  ·  "
-                .. kit
-        )
+        engineReadout:SetText(string.upper(role) .. "  ·  " .. (pvp and "PVP" or "PVE") .. "  ·  " .. kitText)
     end
-    for _, collection in ipairs({ generalControls }) do
-        for _, b in ipairs(collection) do
-            if b.mark then
-                local on = d[b.key] == true
-                b.mark:SetShown(on)
-                b.box:SetBackdropColor(
-                    on and color.r * 0.22 or 0.04,
-                    on and color.g * 0.22 or 0.045,
-                    on and color.b * 0.22 or 0.052,
-                    1
-                )
-                b.box:SetBackdropBorderColor(
-                    on and color.r * 0.7 or 0.28,
-                    on and color.g * 0.7 or 0.29,
-                    on and color.b * 0.7 or 0.31,
-                    1
-                )
-            elseif b.values then
-                local value = b.key == "spec" and d.specMode == "auto" and "Automatic" or d[b.key]
-                local shown = b.key == "scale" and tostring(math.floor((value or 1) * 100 + 0.5)) .. "%"
-                    or tostring(value or b.values[1])
-                local lk = string.lower(b.key)
-                if string.find(lk, "rage") then
-                    shown = shown .. " rage"
-                elseif b.key == "stealthRange" then
-                    shown = shown .. " yd"
-                elseif string.find(lk, "ttd") or string.find(lk, "lifetime") then
-                    shown = shown .. " sec"
-                elseif string.find(lk, "mana") or string.find(lk, "hp") then
-                    shown = shown .. "%"
-                elseif string.find(lk, "energy") then
-                    shown = shown .. " energy"
-                elseif string.find(lk, "cp") then
-                    shown = shown .. " CP"
-                end
-                if b.display then
-                    shown = b.display[value] or shown
-                end
-                if b.formatValue then
-                    shown = b.formatValue(b.key, value or b.values[1])
-                end
-                b.text:SetText(shown)
-                if b.SetValue then
-                    local at, distance = 1, math.huge
-                    for i, v in ipairs(b.values) do
-                        local diff = math.abs(v - (tonumber(value) or b.values[1]))
-                        if diff < distance then
-                            at, distance = i, diff
-                        end
-                    end
-                    b.settingValue = true
-                    b:SetValue(at)
-                    b.settingValue = nil
-                end
+    for _, w in ipairs(widgets) do
+        if w.isSwitch then
+            local on = switchOn(d, w)
+            w.track:SetBackdropColor(
+                on and color.r * 0.35 or 0.05,
+                on and color.g * 0.35 or 0.055,
+                on and color.b * 0.35 or 0.062,
+                1
+            )
+            w.track:SetBackdropBorderColor(
+                on and color.r * 0.8 or 0.24,
+                on and color.g * 0.8 or 0.25,
+                on and color.b * 0.8 or 0.27,
+                1
+            )
+            w.knob:ClearAllPoints()
+            w.knob:SetPoint("CENTER", w.track, on and "RIGHT" or "LEFT", on and -10 or 10, 0)
+            w.knob:SetColorTexture(on and 0.95 or 0.55, on and 0.96 or 0.56, on and 0.97 or 0.58, 1)
+        elseif w.isSlider then
+            local v = tonumber(d[w.key])
+            if w.key == "scale" then
+                v = v or 1
             end
+            w:Paint(v or w.minV)
+        elseif w.values then
+            local value = w.key == "spec" and d.specMode == "auto" and "Automatic" or d[w.key]
+            local shown = tostring(value or w.values[1])
+            if w.display then
+                shown = w.display[value] or shown
+            end
+            w.text:SetText(shown)
         end
     end
     if RH.IconFrame then
         RH.IconFrame:EnableMouse(not d.locked)
         RH.IconFrame:SetScale(d.scale or 1)
     end
-    if selected == 2 then
+    if selected == 3 then
         RH.RefreshClassDashboard()
     end
 end
@@ -706,17 +842,24 @@ function RH.ToggleMenu()
         frame:Show()
     end
 end
+frame:SetScript("OnHide", function()
+    if openDropdown then
+        openDropdown:Hide()
+        openDropdown = nil
+    end
+end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footer:SetPoint("BOTTOMLEFT", 14, 10)
-footer:SetText("NEXTCAST  5.11.0")
+footer:SetPoint("BOTTOMLEFT", 14, 8)
+footer:SetText("NEXTCAST  6.3.0")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footerRight:SetPoint("BOTTOMRIGHT", -14, 10)
-footerRight:SetText("/nextcast")
+footerRight:SetPoint("BOTTOMRIGHT", -14, 8)
+footerRight:SetText("/nc")
 footerRight:SetTextColor(color.r * 0.7, color.g * 0.7, color.b * 0.7)
 local function fitWindow()
-    frame:SetScale(math.max(0.4, math.min(1, (UIParent:GetWidth() - 24) / 780, (UIParent:GetHeight() - 24) / 540)))
+    frame:SetScale(math.max(0.4, math.min(1, (UIParent:GetWidth() - 24) / 800, (UIParent:GetHeight() - 24) / 560)))
     RH.RestoreFramePosition(frame, "menuPosition")
+    RH.RefreshDashboard()
 end
 frame:SetScript("OnShow", fitWindow)
 frame:SetScript("OnDragStop", function(self)
@@ -725,7 +868,6 @@ frame:SetScript("OnDragStop", function(self)
 end)
 table.insert(UISpecialFrames, "NextCastDashboard")
 
-local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
 local mini = CreateFrame("Button", "NextCastMinimapButton", Minimap, "BackdropTemplate")
 mini:SetSize(34, 34)
 mini:SetFrameStrata("MEDIUM")
