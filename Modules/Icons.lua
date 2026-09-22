@@ -224,4 +224,7 @@ login:SetScript("OnEvent", function()
     RH.RestoreFramePosition(f, "position")
     f:SetScale(d.scale or 1)
     f:EnableMouse(not d.locked)
+    if RH.EnsureFriendlyMacros then
+        RH.EnsureFriendlyMacros()
+    end
 end)

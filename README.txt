@@ -1,4 +1,4 @@
-NextCast 5.8.7 — WoW Forever 1–30
+NextCast 5.9.0 — WoW Forever 1–30
 =================================
 
 Install
@@ -17,11 +17,14 @@ Attack
   flip off. No extra StartAttack macro.
 
 Heals
-  If TargetColor is not calibrated, hover the ally and bind heals as:
+  GGLoader presses your bind with the current target. NextCast snaps the
+  injured ally onto target, paints the heal, then TargetLastEnemy after
+  the cast. It also writes #showtooltip macros (NC FlashHeal, NC MotW, …)
+  onto the same bar slots as those spells:
 
-    /cast [@mouseover,help,nodead][@player] Flash Heal
+    /cast [@mouseover,help,nodead][@target,help,nodead][@player] SPELL
 
-  Mouseover heals is on by default (/nc → Mouseover heals).
+  Mouseover heals is on by default.
 
 ExtraIcon protocol (no TellMeWhen, no Rubim ExtraIcon addon)
   NextCast draws GriphRotations' ExtraIcon strip itself so an existing

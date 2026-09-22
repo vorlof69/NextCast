@@ -801,6 +801,146 @@ function RH.CastAllyBuff(spell, unit, buffName, seconds)
     return spell:Cast()
 end
 
+-- GGLoader only presses the scanned bind. A heal/buff with an enemy targeted
+-- fails. Snap the friendly unit onto target for ~0.8s, then TargetLastEnemy.
+function RH.SnapHealTarget(unit)
+    if not unit or unit == "group" then
+        return
+    end
+    local resolved = unit
+    if RH.ResolveUnit then
+        resolved = RH.ResolveUnit(unit) or unit
+    end
+    if resolved == "mouseover" or resolved == "focus" or resolved == "target" then
+        return
+    end
+    local okSame, same = pcall(UnitIsUnit, "target", resolved)
+    if okSame and not HL.Secret(same) and same then
+        return
+    end
+    if resolved == "player" then
+        local okAtk, atk = pcall(UnitCanAttack, "player", "target")
+        if not (okAtk and not HL.Secret(atk) and atk) then
+            return
+        end
+    end
+    local okAtk, atk = pcall(UnitCanAttack, "player", "target")
+    if okAtk and not HL.Secret(atk) and atk then
+        HL.State.needHealSnapBack = true
+        HL.State.healSnapAt = GetTime()
+    end
+    pcall(TargetUnit, resolved)
+end
+
+function RH.RestoreAfterHeal(force)
+    if not HL.State.needHealSnapBack then
+        return
+    end
+    if not force then
+        if RH.healTarget then
+            return
+        end
+        local at = HL.State.healSnapAt
+        if at and GetTime() - at < 0.85 then
+            return
+        end
+    end
+    HL.State.needHealSnapBack = nil
+    HL.State.healSnapAt = nil
+    pcall(TargetLastEnemy)
+end
+
+local friendlyMacroSpells = {
+    PRIEST = {
+        { "NC FlashHeal", "Flash Heal" },
+        { "NC Heal", "Heal" },
+        { "NC LHeal", "Lesser Heal" },
+        { "NC GHeal", "Greater Heal" },
+        { "NC Renew", "Renew" },
+        { "NC Shield", "Power Word: Shield" },
+        { "NC Fort", "Power Word: Fortitude" },
+        { "NC PoH", "Prayer of Healing" },
+        { "NC Penance", "Penance" },
+        { "NC PoM", "Prayer of Mending" },
+    },
+    PALADIN = {
+        { "NC FoL", "Flash of Light" },
+        { "NC HolyLight", "Holy Light" },
+        { "NC HolyShock", "Holy Shock" },
+        { "NC LoH", "Lay on Hands" },
+        { "NC BoM", "Blessing of Might" },
+        { "NC BoW", "Blessing of Wisdom" },
+        { "NC BoK", "Blessing of Kings" },
+        { "NC Cleanse", "Cleanse" },
+    },
+    DRUID = {
+        { "NC HT", "Healing Touch" },
+        { "NC Rejuv", "Rejuvenation" },
+        { "NC Regrowth", "Regrowth" },
+        { "NC Swiftmend", "Swiftmend" },
+        { "NC MotW", "Mark of the Wild" },
+        { "NC Thorns", "Thorns" },
+        { "NC RMCurse", "Remove Curse" },
+    },
+    SHAMAN = {
+        { "NC HWave", "Healing Wave" },
+        { "NC LHWave", "Lesser Healing Wave" },
+        { "NC CHeal", "Chain Heal" },
+        { "NC Riptide", "Riptide" },
+    },
+    MAGE = {
+        { "NC AI", "Arcane Intellect" },
+    },
+}
+
+function RH.EnsureFriendlyMacros()
+    if not CreateMacro or not GetMacroIndexByName then
+        return
+    end
+    local class = select(2, UnitClass("player"))
+    local list = friendlyMacroSpells[class]
+    if not list then
+        return
+    end
+    local db = RH.EnsureDB and RH.EnsureDB()
+    for i = 1, #list do
+        local macroName, spellName = list[i][1], list[i][2]
+        if HeroCache and HeroCache.Known and HeroCache.Known[spellName] then
+            local body = "#showtooltip "
+                .. spellName
+                .. "\n/cast [@mouseover,help,nodead][@target,help,nodead][@player] "
+                .. spellName
+            local index = GetMacroIndexByName(macroName)
+            if not index or index == 0 then
+                pcall(CreateMacro, macroName, "INV_MISC_QUESTIONMARK", body, 1)
+                index = GetMacroIndexByName(macroName)
+            else
+                pcall(EditMacro, index, macroName, nil, body)
+            end
+            if db and db.friendlyMacrosRev ~= 2 and index and index > 0 and GetActionInfo and PickupMacro and PlaceAction then
+                for slot = 1, 120 do
+                    local ok, actionType, id = pcall(GetActionInfo, slot)
+                    if ok and actionType == "spell" and type(id) == "number" then
+                        local name = HeroCache:SpellInfo(id)
+                        if name == spellName then
+                            if PickupMacro(index) then
+                                PlaceAction(slot)
+                                if ClearCursor then
+                                    ClearCursor()
+                                end
+                            end
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if db then
+        db.friendlyMacrosRev = 2
+    end
+end
+
 -- Self buff / aura / aspect / armor. Unknown (nil) does not recast.
 -- On recommend we latch so a false aura scan cannot pulse every GCD.
 function RH.CastIfMissing(spell, names, seconds)

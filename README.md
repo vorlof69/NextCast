@@ -1,21 +1,18 @@
-# NextCast 5.8.7
+# NextCast 5.9.0
 
 All-class recommendation engine for **WoW Forever 1–30**. Griph ExtraIcon / GGLoader protocol.
 
-## Download (this is the one that works)
+## Download
 
-1. Open this repo: https://github.com/vorlof69/NextCast
-2. Click the green **Code** button
-3. Click **Download ZIP**
-4. Extract the folder
-5. Rename it to `NextCast` (drop the `-main` suffix)
-6. Put it in `World of Warcraft\_classic_beta_\Interface\AddOns\`
-7. `/reload` in game
+[https://github.com/vorlof69/NextCast/releases/latest](https://github.com/vorlof69/NextCast/releases/latest)
 
-Direct zip: https://github.com/vorlof69/NextCast/archive/refs/heads/main.zip
+Direct zip: https://github.com/vorlof69/NextCast/releases/download/v5.9.0/NextCast-5.9.0.zip
 
-## Install layout
+1. Extract the folder
+2. Rename it to `NextCast` if it has a suffix
+3. Put it in `World of Warcraft\_classic_beta_\Interface\AddOns\`
+4. `/reload`
 
-```
-Interface/AddOns/NextCast/NextCast.toc
-```
+Healing: NextCast snaps the injured ally onto your target so GGLoader's keybind lands on them, then returns you to the enemy. It also writes `@mouseover/@target/@player` macros (`NC FlashHeal`, `NC MotW`, …) onto the same bar slots as those spells.
+
+Overview is spec only. Role is detected from talents and form.

@@ -315,70 +315,30 @@ overviewScroll:SetScript("OnSizeChanged", function(self, width)
     overviewContent:SetWidth(width)
 end)
 
-local play = card(overviewContent, "PLAY AS", -4, 168)
+local play = card(overviewContent, "SPECIALIZATION", -4, 108)
 local specOptions = {}
-for _, name in ipairs(specs[token] or { "Leveling" }) do
+for _, name in ipairs(specs[token] or { "Automatic", "Leveling" }) do
     specOptions[#specOptions + 1] = { name, name }
 end
 generalControls[#generalControls + 1] = dropdown(
     play,
-    "SPECIALIZATION",
+    "SPEC",
     "spec",
     specOptions,
     18,
     -46,
-    330,
+    690,
     function(value)
         RH.SetSpec(value)
     end
 )
 local engineReadout = play:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-engineReadout:SetPoint("TOPLEFT", 382, -52)
-engineReadout:SetWidth(330)
+engineReadout:SetPoint("TOPLEFT", 18, -88)
+engineReadout:SetWidth(690)
 engineReadout:SetJustifyH("LEFT")
 engineReadout:SetTextColor(0.62, 0.66, 0.72)
 
-local presetButtons = {}
-local function presetButton(label, id, x)
-    local b = skinButton(play, 124, 34, label)
-    b:SetPoint("TOPLEFT", x, -118)
-    b.presetId = id
-    b:SetScript("OnClick", function()
-        RH.ApplyPreset(id)
-        RH.RefreshDashboard()
-    end)
-    b:SetScript("OnEnter", function(s)
-        s:SetBackdropBorderColor(color.r, color.g, color.b, 1)
-        if GameTooltip then
-            GameTooltip:SetOwner(s, "ANCHOR_TOP")
-            GameTooltip:AddLine(label, 1, 0.82, 0.35)
-            local tip = {
-                dps = "Damage. Heals only when someone is dying.",
-                tank = "Hold threat. Self-heal when you are actually dying.",
-                healer = "Full party kit. Prefers tanks and incoming damage.",
-                pvp = "Bias yourself, mouseover, and focus. Earlier defensives.",
-                reset = "Restore this class to NextCast defaults.",
-            }
-            GameTooltip:AddLine(tip[id] or "", 0.92, 0.92, 0.94, true)
-            GameTooltip:Show()
-        end
-    end)
-    b:SetScript("OnLeave", function(s)
-        s:SetBackdropBorderColor(0.28, 0.31, 0.37, 1)
-        if GameTooltip then
-            GameTooltip:Hide()
-        end
-    end)
-    presetButtons[#presetButtons + 1] = b
-    return b
-end
-presetButton("DPS", "dps", 18)
-presetButton("TANK", "tank", 152)
-presetButton("HEALER", "healer", 286)
-presetButton("PVP", "pvp", 420)
-presetButton("RESET", "reset", 554)
-
-local switches = card(overviewContent, "SWITCHES", -184, 196)
+local switches = card(overviewContent, "SWITCHES", -124, 196)
 generalControls[#generalControls + 1] =
     toggle(switches, "Cooldowns", "cooldowns", 20, -48, "Racials and class cooldowns when Burst is on.")
 generalControls[#generalControls + 1] =
@@ -665,22 +625,6 @@ function RH.RefreshDashboard()
                 .. kit
         )
     end
-    if presetButtons then
-        for _, btn in ipairs(presetButtons) do
-            local on = d.preset == btn.presetId
-            btn:SetBackdropBorderColor(
-                on and color.r or 0.28,
-                on and color.g or 0.31,
-                on and color.b or 0.37,
-                1
-            )
-            btn.text:SetTextColor(
-                on and color.r or 0.84,
-                on and color.g or 0.86,
-                on and color.b or 0.90
-            )
-        end
-    end
     for _, collection in ipairs({ generalControls }) do
         for _, b in ipairs(collection) do
             if b.mark then
@@ -775,7 +719,7 @@ function RH.ToggleMenu()
 end
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 10)
-footer:SetText("NEXTCAST  5.8.7")
+footer:SetText("NEXTCAST  5.9.0")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 10)

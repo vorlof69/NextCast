@@ -233,6 +233,11 @@ local function normalize(db)
     if db.healRole ~= "healer" and db.healRole ~= "tank" and db.healRole ~= "dps" then
         db.healRole = "auto"
     end
+    -- Overview no longer exposes role presets — spec + form decide the kit.
+    if db.preset ~= "auto" then
+        db.healRole = "auto"
+        db.preset = "auto"
+    end
     if
         db.preset ~= "dps"
         and db.preset ~= "tank"
@@ -777,9 +782,16 @@ function RH.MainRotation()
             end
         end
         if result then
+            if RH.healTarget and RH.SnapHealTarget then
+                RH.SnapHealTarget(RH.healTarget)
+            elseif RH.RestoreAfterHeal then
+                RH.RestoreAfterHeal(false)
+            end
             if RH.NoteCooldown then
                 RH.NoteCooldown(result)
             end
+        elseif RH.RestoreAfterHeal then
+            RH.RestoreAfterHeal(false)
         end
         return result
     end

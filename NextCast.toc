@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: NextCast
 ## Notes: All-class recommendation engine for WoW Forever 1-30. Griph ExtraIcon GGL protocol.
-## Version: 5.8.7
+## Version: 5.9.0
 ## SavedVariables: NextCastDB, RubimRHDB
 ## Author: NextCast
 ## X-Website: /nc ggl

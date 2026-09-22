@@ -326,6 +326,9 @@ f:SetScript("OnEvent", function(_, event, unit, a, b, c)
     elseif RubimRH and name == "Berserker Stance" then
         RubimRH.Rotation.stance = 3
     end
+    if RubimRH and RubimRH.RestoreAfterHeal then
+        RubimRH.RestoreAfterHeal(true)
+    end
     if name == "Slice and Dice" then
         HL.State.buffs[name] = now + 6 + 3 * math.max(1, record and record.combo or HL.State.combo or 0)
     end
