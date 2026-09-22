@@ -80,12 +80,12 @@ RubimRH.Rotation.SetAPL(1, function()
     local playerHP = P:HealthPercentage()
     local ttd = T:TimeToDie()
     local shield = RH.HasShield()
-    local tank = db.spec == "Protection"
-    local fury = db.spec == "Fury"
-    local arms = not tank and not fury
-    local pvp = RH.IsPvPContext(db.warriorContext)
     local formOK, formValue = pcall(GetShapeshiftForm)
     local liveForm = formOK and HeroLib.SafeNumber(formValue, nil) or nil
+    local tank = db.spec == "Protection" or liveForm == 2
+    local fury = db.spec == "Fury" and not tank
+    local arms = not tank and not fury
+    local pvp = RH.IsPvPContext(db.warriorContext)
     if liveForm == 1 or liveForm == 2 or liveForm == 3 then
         RH.Rotation.stance = liveForm
     end

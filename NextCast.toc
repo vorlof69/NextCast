@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: NextCast
 ## Notes: Forever-native rotation engine. ExtraIcon + Action TargetColor. No TellMeWhen.
-## Version: 6.3.0
+## Version: 6.3.1
 ## SavedVariables: NextCastDB, RubimRHDB
 ## Author: NextCast
 ## X-Website: /nc ggl

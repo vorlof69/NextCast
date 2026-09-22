@@ -22,8 +22,10 @@ local S = {
     Ghostly = RH.S(14278),
     Hemo = RH.S(16511),
     Mutilate = RH.S(1329),
+    Vanish = RH.S(1856),
+    Feint = RH.S(1966),
+    Expose = RH.Named("Expose Armor", 8647),
 }
-S.Vanish = RH.S(1856)
 RubimRH.Rotation.SetAPL(4, function()
     if P:IsDeadOrGhost() or P:IsCasting() or not RH.ValidTarget() then
         return nil
@@ -130,6 +132,12 @@ RubimRH.Rotation.SetAPL(4, function()
     then
         return S.Evasion:Cast()
     end
+    if db.defensives ~= false and hp and hp < 45 and melee then
+        local feint = RH.CastIfMissing(S.Feint, "Feint", 8)
+        if feint then
+            return feint
+        end
+    end
     -- Cold Blood guarantees a crit -- save it for Burst mode so it lands on a
     -- cooldown-stacked finisher instead of firing on the first big combo point.
     if RH.CDs and RH.Burst and cp >= (tonumber(db.rogueCooldownCP) or 4) and RH.Ready(S.CB) then
@@ -157,21 +165,25 @@ RubimRH.Rotation.SetAPL(4, function()
         local sndLifetime = tonumber(db.sndMinTTD) or 21
         local survivesSnD = (ttd and ttd >= sndLifetime) or (not ttd and durable and targetHP and targetHP >= 75)
         local sndActive = P:Buff("Slice and Dice") == true
-        if not pvp and db.rogueSnD and not sndActive and survivesSnD and RH.Ready(S.SnD) then
+        if db.rogueSnD and not sndActive and (pvp or survivesSnD) and RH.Ready(S.SnD) then
             RH.NoteBuff("player", "Slice and Dice", 12)
             return S.SnD:Cast()
         end
         if
-            not pvp
-            and sndActive
-            and db.rogueRupture
-            and (db.spec == "Assassination" or db.spec == "Subtlety")
-            and ttd
-            and ttd > (tonumber(db.ruptureMinTTD) or 18)
+            sndActive
+            and db.rogueRupture ~= false
+            and db.useDots ~= false
+            and ((ttd and ttd > (tonumber(db.ruptureMinTTD) or 18)) or durable)
         then
             local rupture = RH.CastIfDebuffMissing(S.Rupture, "Rupture", 12, true)
             if rupture then
                 return rupture
+            end
+        end
+        if durable and db.rogueExpose and RH.Ready(S.Expose, true) then
+            local expose = RH.CastIfDebuffMissing(S.Expose, "Expose Armor", 20, true)
+            if expose then
+                return expose
             end
         end
         if db.rogueEvis and RH.AbilityEnabled("Eviscerate") and S.Evis:IsAvailable() then
@@ -184,16 +196,14 @@ RubimRH.Rotation.SetAPL(4, function()
     if melee and RH.Ready(S.Riposte) then
         return S.Riposte:Cast()
     end
-    if cp < 5 and melee and RH.Ready(S.Ghostly, true) then
-        return S.Ghostly:Cast()
-    end
-    -- Learned Forever talent builders define the spec; baseline leveling falls
-    -- back to Backstab from behind and Sinister Strike from the front.
-    if db.spec == "Assassination" and RH.Ready(S.Mutilate, true) then
+    if RH.Ready(S.Mutilate, true) then
         return S.Mutilate:Cast()
     end
-    if db.spec == "Subtlety" and RH.Ready(S.Hemo, true) then
+    if RH.Ready(S.Hemo, true) then
         return S.Hemo:Cast()
+    end
+    if cp < 5 and melee and RH.Ready(S.Ghostly, true) then
+        return S.Ghostly:Cast()
     end
     if behind and dagger == true and melee and RH.Ready(S.Backstab, true) then
         return S.Backstab:Cast()

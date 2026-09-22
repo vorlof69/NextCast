@@ -99,6 +99,7 @@ RH.Abilities = {
         { 408, "Kidney Shot", "PvP" },
         { 1766, "Kick", "Interrupt" },
         { 1776, "Gouge", "Defensive" },
+        { 1966, "Feint", "Defensive" },
         { 14251, "Riposte", "Proc" },
         { 5277, "Evasion", "Defensive" },
         { 2983, "Sprint", "Utility" },

@@ -435,15 +435,38 @@ engineReadout:SetWidth(740)
 engineReadout:SetJustifyH("LEFT")
 engineReadout:SetTextColor(0.56, 0.60, 0.66)
 
-local engine = card(pages[1], "ENGINE", -124, 168)
+local isHealer = token == "PRIEST" or token == "PALADIN" or token == "SHAMAN" or token == "DRUID"
+local usesMana = token ~= "ROGUE" and token ~= "WARRIOR"
+local usesDots = token == "ROGUE"
+    or token == "HUNTER"
+    or token == "WARLOCK"
+    or token == "PRIEST"
+    or token == "DRUID"
+    or token == "WARRIOR"
+
+local engineH = isHealer and 168 or (usesDots and 128 or 92)
+local engine = card(pages[1], "ENGINE", -124, engineH)
 track(switch(engine, "Cooldowns", "cooldowns", 16, -44, "Racials and class cooldowns when Burst is on.", true))
 track(switch(engine, "Interrupts", "interrupts", 400, -44, "Kick when a hostile cast is readable.", true))
-track(switch(engine, "Healing", "healing", 16, -84, "Role-aware heals. Healers full kit, tanks self-sustain, DPS emergency only.", true))
-track(switch(engine, "Defensives", "defensives", 400, -84, "Personal survival at low health.", true))
-track(switch(engine, "Maintain buffs", "maintainBuffs", 16, -124, "Keep class buffs, auras, and aspects up.", true))
-track(switch(engine, "DoTs", "useDots", 400, -124, "Keep bleeds and magic dots on lasting targets.", true))
+local engineY = -84
+if isHealer then
+    track(switch(engine, "Healing", "healing", 16, engineY, "Role-aware heals. Healers full kit, tanks self-sustain.", true))
+    track(switch(engine, "Defensives", "defensives", 400, engineY, "Personal survival at low health.", true))
+    engineY = engineY - 40
+    track(switch(engine, "Maintain buffs", "maintainBuffs", 16, engineY, "Keep class buffs, auras, and aspects up.", true))
+    if usesDots then
+        track(switch(engine, "DoTs", "useDots", 400, engineY, "Keep bleeds and magic dots on lasting targets.", true))
+    end
+else
+    track(switch(engine, "Defensives", "defensives", 16, engineY, "Personal survival at low health.", true))
+    track(switch(engine, "Maintain buffs", "maintainBuffs", 400, engineY, "Keep class buffs, auras, and aspects up.", true))
+    engineY = engineY - 40
+    if usesDots then
+        track(switch(engine, "DoTs", "useDots", 16, engineY, "Keep bleeds and magic dots on lasting targets.", true))
+    end
+end
 
-local display = card(pages[1], "DISPLAY", -302, 92)
+local display = card(pages[1], "DISPLAY", -124 - engineH - 10, 92)
 track(switch(display, "Lock HUD", "locked", 16, -44, "Prevent dragging the recommendation icon.", false))
 track(slider(display, "HUD scale", "scale", 0.6, 2.0, 0.1, 400, -40, 340, "x"))
 
@@ -452,27 +475,50 @@ local rotScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameT
 rotScroll:SetPoint("TOPLEFT", 0, 0)
 rotScroll:SetPoint("BOTTOMRIGHT", -22, 0)
 local rotContent = CreateFrame("Frame", nil, rotScroll)
-rotContent:SetSize(746, 620)
+rotContent:SetSize(746, 560)
 rotScroll:SetScrollChild(rotContent)
 
 local ctxKey = string.lower(token) .. "Context"
-local combat = card(rotContent, "COMBAT", -2, 168)
+local combatH = 110
+if isHealer or usesDots then
+    combatH = 168
+end
+local combat = card(rotContent, "COMBAT", -2, combatH)
 track(dropdown(combat, "CONTEXT", ctxKey, {
     { "auto", "Auto — battleground / arena = PvP" },
     { "pve", "PvE" },
     { "pvp", "PvP" },
 }, 16, -40, 350))
-track(slider(combat, "Emergency HP", "emergencyHealHP", 15, 70, 1, 390, -40, 330, "%"))
-track(slider(combat, "Defensive HP", "defensiveHP", 10, 70, 1, 16, -96, 350, "%"))
-track(slider(combat, "Dot min TTD", "dotMinTTD", 4, 20, 1, 390, -96, 330, "s"))
+track(slider(combat, "Defensive HP", "defensiveHP", 10, 70, 1, 390, -40, 330, "%"))
+if isHealer then
+    track(slider(combat, "Emergency HP", "emergencyHealHP", 15, 70, 1, 16, -96, 350, "%"))
+    if usesDots then
+        track(slider(combat, "Dot min TTD", "dotMinTTD", 4, 20, 1, 390, -96, 330, "s"))
+    end
+elseif usesDots then
+    track(slider(combat, "Dot min TTD", "dotMinTTD", 4, 20, 1, 16, -96, 350, "s"))
+end
 
-local sustain = card(rotContent, "RESOURCES  ·  HEALING", -180, 168)
-track(slider(sustain, "Mana reserve", "manaReserve", 0, 60, 5, 16, -40, 350, "%"))
-track(slider(sustain, "Efficient heal HP", "efficientHealHP", 40, 95, 1, 390, -40, 330, "%"))
-track(switch(sustain, "Mouseover heals", "healMouseover", 16, -104, "Prefer the friend under your cursor.", true))
-track(switch(sustain, "Resource logic", "resourceLogic", 400, -104, "Hold spenders when you would go empty.", true))
+local kitTop = -2 - combatH - 10
+if isHealer or usesMana then
+    local sustainH = isHealer and 168 or 110
+    local sustain = card(rotContent, isHealer and "HEALING" or "RESOURCES", kitTop, sustainH)
+    kitTop = kitTop - sustainH - 10
+    local col = 16
+    if usesMana then
+        track(slider(sustain, "Mana reserve", "manaReserve", 0, 60, 5, 16, -40, 350, "%"))
+        col = 390
+    end
+    if isHealer then
+        track(slider(sustain, "Efficient heal HP", "efficientHealHP", 40, 95, 1, col, -40, 330, "%"))
+        track(switch(sustain, "Mouseover heals", "healMouseover", 16, -104, "Prefer the friend under your cursor.", true))
+        track(switch(sustain, "Resource logic", "resourceLogic", 400, -104, "Hold spenders when you would go empty.", true))
+    else
+        track(switch(sustain, "Resource logic", "resourceLogic", usesMana and 390 or 16, usesMana and -40 or -44, "Hold spenders when you would go empty.", true))
+    end
+end
 
-local kit = card(rotContent, string.upper(className) .. "  KIT", -358, 240)
+local kit = card(rotContent, string.upper(className) .. "  KIT", kitTop, 240)
 if token == "ROGUE" then
     track(dropdown(kit, "OPENER", "rogueOpener", {
         { "auto", "Auto" },
@@ -482,8 +528,9 @@ if token == "ROGUE" then
     }, 16, -40, 350))
     track(slider(kit, "Eviscerate CP", "evisCP", 1, 5, 1, 390, -40, 330, " CP"))
     track(slider(kit, "Stealth range", "stealthRange", 8, 40, 1, 16, -96, 350, " yd"))
-    track(switch(kit, "Slice and Dice", "rogueSnD", 16, -160, nil, true))
-    track(switch(kit, "Rupture", "rogueRupture", 400, -160, nil, true))
+    track(slider(kit, "Evasion HP", "evasionHP", 15, 70, 1, 390, -96, 330, "%"))
+    track(switch(kit, "Slice and Dice", "rogueSnD", 16, -160, "Keep SnD rolling in PvE and PvP.", true))
+    track(switch(kit, "Rupture", "rogueRupture", 400, -160, "Bleed on lasting targets after SnD.", true))
 elseif token == "WARRIOR" then
     track(slider(kit, "Heroic Strike rage", "heroicRage", 20, 90, 5, 16, -40, 350, ""))
     track(slider(kit, "Sunder stacks", "sunderStacks", 1, 5, 1, 390, -40, 330, ""))
@@ -850,7 +897,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 8)
-footer:SetText("NEXTCAST  6.3.0")
+footer:SetText("NEXTCAST  6.3.1")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 8)
