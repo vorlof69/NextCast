@@ -102,15 +102,15 @@ local well = CreateFrame("Frame", nil, f, "BackdropTemplate")
 well:SetSize(60, 60)
 well:SetPoint("TOP", 0, -24)
 well:SetBackdrop({
-    bgFile = "Interface\\Buttons\\WHITE8X8",
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     tile = true,
-    tileSize = 8,
-    edgeSize = 10,
+    tileSize = 16,
+    edgeSize = 12,
     insets = { left = 3, right = 3, top = 3, bottom = 3 },
 })
-well:SetBackdropColor(0.02, 0.02, 0.02, 1)
-well:SetBackdropBorderColor(0.75, 0.6, 0.22, 1)
+well:SetBackdropColor(0, 0, 0, 1)
+well:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
 
 local icon = well:CreateTexture(nil, "ARTWORK")
 icon:SetPoint("TOPLEFT", 4, -4)

@@ -1,5 +1,16 @@
 local RH = RubimRH
 local WHITE = "Interface\\Buttons\\WHITE8X8"
+local GOLD = { r = 0.85, g = 0.68, b = 0.22 }
+local function goldBox(edge)
+    return {
+        bgFile = WHITE,
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = edge or 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    }
+end
 local token = select(2, UnitClass("player")) or "ROGUE"
 local className = select(1, UnitClass("player")) or token
 local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[token] or { r = 0.78, g = 0.64, b = 0.32 }
@@ -242,7 +253,7 @@ local function switch(parent, label, key, x, y, helpText, defaultOn)
     b.track = CreateFrame("Frame", nil, b, "BackdropTemplate")
     b.track:SetSize(36, 18)
     b.track:SetPoint("LEFT")
-    b.track:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
+    b.track:SetBackdrop(goldBox(10))
     b.knob = b.track:CreateTexture(nil, "OVERLAY")
     b.knob:SetTexture(WHITE)
     b.knob:SetSize(12, 12)
@@ -288,19 +299,19 @@ local function slider(parent, label, key, minV, maxV, step, x, y, w, suffix)
     wrap.track:SetHeight(8)
     wrap.track:SetPoint("BOTTOMLEFT", 0, 6)
     wrap.track:SetPoint("BOTTOMRIGHT", 0, 6)
-    wrap.track:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    wrap.track:SetBackdropColor(0.04, 0.045, 0.052, 1)
-    wrap.track:SetBackdropBorderColor(0.20, 0.21, 0.23, 1)
+    wrap.track:SetBackdrop(goldBox(8))
+    wrap.track:SetBackdropColor(0, 0, 0, 0.7)
+    wrap.track:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     wrap.fill = wrap.track:CreateTexture(nil, "ARTWORK")
     wrap.fill:SetTexture(WHITE)
-    wrap.fill:SetPoint("TOPLEFT", 1, -1)
-    wrap.fill:SetPoint("BOTTOMLEFT", 1, 1)
-    wrap.fill:SetColorTexture(color.r * 0.7, color.g * 0.7, color.b * 0.7, 1)
+    wrap.fill:SetPoint("TOPLEFT", 2, -2)
+    wrap.fill:SetPoint("BOTTOMLEFT", 2, 2)
+    wrap.fill:SetColorTexture(GOLD.r, GOLD.g, GOLD.b, 1)
     wrap.thumb = CreateFrame("Button", nil, wrap.track, "BackdropTemplate")
     wrap.thumb:SetSize(14, 14)
-    wrap.thumb:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    wrap.thumb:SetBackdropColor(0.92, 0.93, 0.94, 1)
-    wrap.thumb:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+    wrap.thumb:SetBackdrop(goldBox(8))
+    wrap.thumb:SetBackdropColor(0.95, 0.88, 0.55, 1)
+    wrap.thumb:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     local function clamp(v)
         v = tonumber(v) or minV
         v = math.max(minV, math.min(maxV, v))
@@ -408,19 +419,22 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
         local row = CreateFrame("Button", nil, list, "BackdropTemplate")
         row:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 27)
         row:SetSize(w - 8, 25)
-        row:SetBackdrop({ bgFile = WHITE })
-        row:SetBackdropColor(0.025, 0.032, 0.043, 0.98)
+        row:SetBackdrop(goldBox(8))
+        row:SetBackdropColor(0, 0, 0, 0.55)
+        row:SetBackdropBorderColor(GOLD.r * 0.5, GOLD.g * 0.5, GOLD.b * 0.5, 1)
         row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.text:SetPoint("LEFT", 10, 0)
         row.text:SetText(text)
         row.value = value
         row.label = text
         row:SetScript("OnEnter", function(self)
-            self:SetBackdropColor(color.r * 0.16, color.g * 0.16, color.b * 0.16, 1)
+            self:SetBackdropColor(0.18, 0.14, 0.05, 1)
+            self:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
             self.text:SetTextColor(1, 0.9, 0.62)
         end)
         row:SetScript("OnLeave", function(self)
-            self:SetBackdropColor(0.025, 0.032, 0.043, 0.98)
+            self:SetBackdropColor(0, 0, 0, 0.55)
+            self:SetBackdropBorderColor(GOLD.r * 0.5, GOLD.g * 0.5, GOLD.b * 0.5, 1)
             self.text:SetTextColor(0.84, 0.86, 0.90)
         end)
         row:SetScript("OnClick", function()
@@ -663,9 +677,9 @@ for i = 1, #allAbilities do
     b.box = CreateFrame("Frame", nil, b, "BackdropTemplate")
     b.box:SetSize(17, 17)
     b.box:SetPoint("RIGHT")
-    b.box:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    b.box:SetBackdropColor(0.025, 0.03, 0.04, 1)
-    b.box:SetBackdropBorderColor(0.34, 0.36, 0.40, 1)
+    b.box:SetBackdrop(goldBox(8))
+    b.box:SetBackdropColor(0, 0, 0, 0.7)
+    b.box:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     b.mark = b.box:CreateTexture(nil, "OVERLAY")
     b.mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
     b.mark:SetSize(20, 20)
@@ -674,9 +688,9 @@ for i = 1, #allAbilities do
     b.map = CreateFrame("Button", nil, b, "BackdropTemplate")
     b.map:SetSize(34, 16)
     b.map:SetPoint("RIGHT", b.box, "LEFT", -6, 0)
-    b.map:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    b.map:SetBackdropColor(0.025, 0.03, 0.04, 1)
-    b.map:SetBackdropBorderColor(0.30, 0.32, 0.36, 1)
+    b.map:SetBackdrop(goldBox(8))
+    b.map:SetBackdropColor(0, 0, 0, 0.7)
+    b.map:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     b.map.text = b.map:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     b.map.text:SetPoint("CENTER")
     b.map.text:SetScale(0.82)
@@ -713,7 +727,7 @@ iconPicker:Hide()
 local pickerTitle = iconPicker:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 pickerTitle:SetPoint("TOPLEFT", 8, -7)
 pickerTitle:SetText("OUTPUT ICON")
-pickerTitle:SetTextColor(color.r, color.g, color.b)
+pickerTitle:SetTextColor(GOLD.r, GOLD.g, GOLD.b)
 for n = 0, 10 do
     local index = n
     local col = index % 2
@@ -721,9 +735,9 @@ for n = 0, 10 do
     local choice = CreateFrame("Button", nil, iconPicker, "BackdropTemplate")
     choice:SetSize(105, 18)
     choice:SetPoint("TOPLEFT", 7 + col * 111, -25 - row * 20)
-    choice:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-    choice:SetBackdropColor(0.04, 0.047, 0.058, 1)
-    choice:SetBackdropBorderColor(0.22, 0.24, 0.28, 1)
+    choice:SetBackdrop(goldBox(8))
+    choice:SetBackdropColor(0, 0, 0, 0.7)
+    choice:SetBackdropBorderColor(GOLD.r * 0.7, GOLD.g * 0.7, GOLD.b * 0.7, 1)
     if index > 0 then
         choice.icon = choice:CreateTexture(nil, "ARTWORK")
         choice.icon:SetSize(14, 14)
@@ -741,10 +755,10 @@ for n = 0, 10 do
         end
     end)
     choice:SetScript("OnEnter", function(s)
-        s:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+        s:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     end)
     choice:SetScript("OnLeave", function(s)
-        s:SetBackdropBorderColor(0.22, 0.24, 0.28, 1)
+        s:SetBackdropBorderColor(GOLD.r * 0.7, GOLD.g * 0.7, GOLD.b * 0.7, 1)
     end)
 end
 local function OpenIconPicker(row)
@@ -766,11 +780,11 @@ for _, row in ipairs(classRows) do
         end
     end)
     row.map:SetScript("OnEnter", function(s)
-        s:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+        s:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
         tip(s, row.entry and row.entry[2] or "Output icon", "Left: Default or Universal 1–10. Right: reset.")
     end)
     row.map:SetScript("OnLeave", function(s)
-        s:SetBackdropBorderColor(0.30, 0.32, 0.36, 1)
+        s:SetBackdropBorderColor(GOLD.r * 0.7, GOLD.g * 0.7, GOLD.b * 0.7, 1)
         if GameTooltip then
             GameTooltip:Hide()
         end
@@ -932,7 +946,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("LEFT", subtitle, "RIGHT", 14, 0)
-footer:SetText("6.4.2")
+footer:SetText("6.4.3")
 footer:SetTextColor(0.72, 0.62, 0.32)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -22, 18)
@@ -960,8 +974,8 @@ mini:SetBackdrop({
     edgeSize = 11,
     insets = { left = 3, right = 3, top = 3, bottom = 3 },
 })
-mini:SetBackdropColor(0.015, 0.02, 0.03, 1)
-mini:SetBackdropBorderColor(0.58, 0.48, 0.25, 1)
+mini:SetBackdropColor(0, 0, 0, 0.9)
+mini:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
 local mt = mini:CreateTexture(nil, "ARTWORK")
 mt:SetPoint("TOPLEFT", 5, -5)
 mt:SetPoint("BOTTOMRIGHT", -5, 5)
@@ -970,7 +984,7 @@ if coords then
     mt:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
 end
 mini:SetScript("OnEnter", function(s)
-    s:SetBackdropBorderColor(color.r, color.g, color.b, 1)
+    s:SetBackdropBorderColor(1, 0.82, 0.2, 1)
     if GameTooltip then
         GameTooltip:SetOwner(s, "ANCHOR_LEFT")
         GameTooltip:AddLine("NextCast", 1, 0.82, 0.35)
@@ -980,7 +994,7 @@ mini:SetScript("OnEnter", function(s)
     end
 end)
 mini:SetScript("OnLeave", function(s)
-    s:SetBackdropBorderColor(0.58, 0.48, 0.25, 1)
+    s:SetBackdropBorderColor(GOLD.r, GOLD.g, GOLD.b, 1)
     if GameTooltip then
         GameTooltip:Hide()
     end
