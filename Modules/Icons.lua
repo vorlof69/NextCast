@@ -3,28 +3,18 @@ local WHITE = "Interface\\Buttons\\WHITE8X8"
 local class = select(2, UnitClass("player")) or "ROGUE"
 local cc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class] or { r = 0.78, g = 0.64, b = 0.32 }
 
-local f = CreateFrame("Frame", "NextCastIcon", UIParent, "BackdropTemplate")
+local f = CreateFrame("Frame", "NextCastIcon", UIParent)
 RH.IconFrame = f
-f:SetSize(84, 124)
+f:SetSize(64, 108)
 f:SetPoint("CENTER")
 f:SetMovable(true)
 f:EnableMouse(true)
 f:RegisterForDrag("LeftButton")
 f:SetClampedToScreen(true)
-f:SetBackdrop({
-    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true,
-    tileSize = 16,
-    edgeSize = 12,
-    insets = { left = 3, right = 3, top = 3, bottom = 3 },
-})
-f:SetBackdropColor(0, 0, 0, 0.92)
-f:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
 
-local function railBtn(label)
+local function flyBtn(label, w)
     local b = CreateFrame("Button", nil, f, "BackdropTemplate")
-    b:SetHeight(16)
+    b:SetSize(w or 31, 16)
     b:SetBackdrop({
         bgFile = WHITE,
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -41,12 +31,10 @@ local function railBtn(label)
     b.text:SetTextColor(1, 0.82, 0)
     return b
 end
-local modeToggle = railBtn("AUTO")
-modeToggle:SetPoint("TOPLEFT", 6, -6)
-modeToggle:SetPoint("TOPRIGHT", f, "TOP", -1, -6)
-local cdToggle = railBtn("CDS")
-cdToggle:SetPoint("TOPRIGHT", -6, -6)
-cdToggle:SetPoint("TOPLEFT", f, "TOP", 1, -6)
+local modeToggle = flyBtn("AUTO", 31)
+modeToggle:SetPoint("TOPLEFT", 0, 0)
+local cdToggle = flyBtn("CDS", 31)
+cdToggle:SetPoint("TOPRIGHT", 0, 0)
 
 local function paintRail(btn, on)
     if on then
@@ -80,12 +68,23 @@ cdToggle:SetScript("OnClick", function()
     RefreshMiniToggles()
 end)
 
-local well = CreateFrame("Frame", nil, f)
-well:SetSize(56, 56)
-well:SetPoint("TOP", 0, -26)
+local well = CreateFrame("Frame", nil, f, "BackdropTemplate")
+well:SetSize(64, 64)
+well:SetPoint("TOP", 0, -18)
+well:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 12,
+    insets = { left = 3, right = 3, top = 3, bottom = 3 },
+})
+well:SetBackdropColor(0, 0, 0, 1)
+well:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
 
 local icon = well:CreateTexture(nil, "ARTWORK")
-icon:SetAllPoints()
+icon:SetPoint("TOPLEFT", 4, -4)
+icon:SetPoint("BOTTOMRIGHT", -4, 4)
 icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 local classLetter = well:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
 classLetter:SetPoint("CENTER")
@@ -110,29 +109,18 @@ pulse:SetColorTexture(cc.r, cc.g, cc.b, 1)
 pulse:SetAlpha(0)
 pulse:SetBlendMode("ADD")
 
-local plate = CreateFrame("Frame", nil, f, "BackdropTemplate")
-plate:SetHeight(18)
-plate:SetPoint("BOTTOMLEFT", 6, 6)
-plate:SetPoint("BOTTOMRIGHT", -6, 6)
-plate:SetBackdrop({
-    bgFile = "Interface\\Buttons\\WHITE8X8",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true,
-    tileSize = 8,
-    edgeSize = 10,
-    insets = { left = 2, right = 2, top = 2, bottom = 2 },
-})
-plate:SetBackdropColor(0.12, 0.09, 0.03, 0.95)
-plate:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
-local nameText = plate:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-nameText:SetPoint("CENTER")
-nameText:SetWidth(60)
+local plate = flyBtn("Ready", 64)
+plate:SetHeight(16)
+plate:SetPoint("TOP", well, "BOTTOM", 0, -4)
+local nameText = plate.text
+nameText:SetWidth(58)
 nameText:SetJustifyH("CENTER")
 
 local function showIdleClass()
     local c = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
     icon:ClearAllPoints()
-    icon:SetAllPoints()
+    icon:SetPoint("TOPLEFT", 4, -4)
+    icon:SetPoint("BOTTOMRIGHT", -4, 4)
     icon:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
     if c then
         icon:SetTexCoord(c[1], c[2], c[3], c[4])
@@ -185,7 +173,27 @@ f:SetScript("OnMouseUp", function(_, b)
         toggleEnabled()
     end
 end)
-plate:EnableMouse(true)
+well:EnableMouse(true)
+well:RegisterForDrag("LeftButton")
+well:SetScript("OnDragStart", function()
+    if not RH.EnsureDB().locked then
+        dragging = true
+        f:StartMoving()
+    end
+end)
+well:SetScript("OnDragStop", function()
+    f:StopMovingOrSizing()
+    dragging = nil
+    RH.SaveFramePosition(f, "position")
+end)
+well:SetScript("OnMouseUp", function(_, b)
+    if dragging then
+        return
+    end
+    if b == "RightButton" and RH.ToggleMenu then
+        RH.ToggleMenu()
+    end
+end)
 plate:SetScript("OnMouseUp", function(_, b)
     if b == "RightButton" and RH.ToggleMenu then
         RH.ToggleMenu()
@@ -241,7 +249,8 @@ f:SetScript("OnUpdate", function(_, dt)
     end
     if tex then
         icon:ClearAllPoints()
-        icon:SetAllPoints()
+        icon:SetPoint("TOPLEFT", 4, -4)
+        icon:SetPoint("BOTTOMRIGHT", -4, 4)
         icon:SetTexture(tex)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:SetVertexColor(1, 1, 1, 1)

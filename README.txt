@@ -1,4 +1,4 @@
-NextCast 6.4.7 — WoW Forever 1–30
+NextCast 6.4.8 — WoW Forever 1–30
 =================================
 
 Standalone. No TellMeWhen. No Action. No macros.
