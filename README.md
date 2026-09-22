@@ -1,4 +1,4 @@
-# NextCast 6.4.8
+# NextCast 6.5.0
 
 Forever-native rotation engine for **WoW Forever 1–30**.
 
@@ -20,6 +20,15 @@ Direct: https://github.com/vorlof69/NextCast/releases/download/v6.1.0/NextCast-6
 Action HealingEngine path: TargetColor paints the ally’s unique color so GGLoader can retarget. NextCast also snaps that unit onto `@target` so ExtraIcon still lands the **raw spell**, then restores the enemy when the heal is SENT.
 
 Mouse over a friend to force that unit. MotW / heals do **not** fire in Bear or Cat.
+
+## Rotation language
+
+Every class is an `NC.Prio` list. First match wins.
+
+`NC.Ready` `NC.Buff` `NC.Debuff` `NC.Combo` `NC.HP` `NC.Enemies` `NC.Go`
+`NC.CDs` `NC.AoE` `NC.Interrupts` — same toggles as AUTO / CDS / kick.
+
+Recommend only. GGLoader still fires ExtraIcon.
 
 ## Overview
 

@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: NextCast
 ## Notes: Forever-native rotation engine. ExtraIcon + Action TargetColor. No TellMeWhen.
-## Version: 6.4.8
+## Version: 6.5.0
 ## SavedVariables: NextCastDB, RubimRHDB
 ## Author: NextCast
 ## X-Website: /nc ggl
@@ -15,6 +15,7 @@ Libs\HeroLib\Class\Unit.lua
 Libs\HeroLib\Events.lua
 Core.lua
 Modules\Helpers.lua
+Modules\NC.lua
 Modules\LevelGates.lua
 Modules\Abilities.lua
 Modules\GGL.lua

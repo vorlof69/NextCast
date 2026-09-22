@@ -1,4 +1,5 @@
 local RH, P, T = RubimRH, RubimRH.Player, RubimRH.Target
+local NC = RH.NC
 local S = {
     Auto = RH.S(75),
     Mark = RH.Named("Hunter's Mark", 1130),
@@ -32,25 +33,7 @@ RubimRH.Rotation.SetAPL(3, function()
     local mana = RH.PowerPercent(0)
     local reserve = db.resourceLogic ~= false and (tonumber(db.manaReserve) or 25) or 0
     local pet = HeroLib.Unit("pet")
-    if db.hunterPet ~= false and not P:AffectingCombat() then
-        if pet:IsDeadOrGhost() and RH.Ready(S.RevivePet) then
-            return S.RevivePet:Cast()
-        elseif not pet:Exists() and RH.Ready(S.CallPet) then
-            return S.CallPet:Cast()
-        end
-    end
-    if
-        db.hunterPet ~= false
-        and db.healing ~= false
-        and petHP
-        and petHP < (pvp and math.max(tonumber(db.hunterPetHealHP) or 65, 70) or (tonumber(db.hunterPetHealHP) or 65))
-        and HeroLib.Unit("pet"):Buff("Mend Pet") ~= true
-        and RH.Ready(S.Mend, "pet")
-    then
-        RH.healTarget = "pet"
-        return S.Mend:Cast()
-    end
-    local playerHP = P:HealthPercentage()
+    local playerHP = NC.HP()
     local needsMonkey = db.defensives ~= false
         and playerHP
         and playerHP < (tonumber(db.defensiveHP) or 30)
@@ -60,95 +43,110 @@ RubimRH.Rotation.SetAPL(3, function()
         aspect = aspect == S.Monkey and S.Hawk or S.Monkey
     end
     local aspectName = aspect:Name()
-    if db.maintainBuffs ~= false and aspectName then
-        local cast = RH.CastIfMissing(aspect, aspectName, 180)
-        if cast then
-            return cast
-        end
-    end
-    RH.healTarget = nil
-    if not RH.ValidTarget() then
-        return nil
-    end
-    if
-        db.defensives ~= false
-        and P:AffectingCombat()
-        and playerHP
-        and playerHP <= (tonumber(db.defensiveHP) or 30)
-        and RH.Ready(S.Feign)
-    then
-        return S.Feign:Cast()
-    end
     local melee = S.Raptor:IsInRange()
-    local ttd = T:TimeToDie()
-    if RH.Interrupts and RH.ShouldInterrupt() then
-        if RH.Ready(S.Scatter, true) then
-            return S.Scatter:Cast()
-        end
-        if RH.Ready(S.Intimidation, true) then
-            return S.Intimidation:Cast()
-        end
-    end
-    if pvp and melee and T:Debuff("Wing Clip") ~= true and RH.Ready(S.Wing, true) then
-        return S.Wing:Cast()
-    end
-    if
-        pvp
-        and db.hunterConcussive ~= false
-        and T:Debuff("Concussive Shot") ~= true
-        and RH.Ready(S.Concussive, true)
-    then
-        return S.Concussive:Cast()
-    end
-    if db.maintainBuffs ~= false and RH.TargetWillLive(10) then
-        local mark = RH.CastIfDebuffMissing(S.Mark, "Hunter's Mark", 90, true)
-        if mark then
-            return mark
-        end
-    end
-    if
-        db.useDots ~= false
-        and RH.TargetWillLive(tonumber(db.dotMinTTD) or 8)
-        and RH.ResourceAbove(mana, reserve)
-    then
-        local sting = RH.CastIfDebuffMissing(S.Serpent, "Serpent Sting", 12, true)
-        if sting then
-            return sting
-        end
-    end
-    -- Rapid Fire is a ranged-attack-speed cooldown -- hold it for Burst mode
-    -- instead of dumping it on the first Serpent Sting refresh.
-    if RH.CDs and RH.Burst and RH.Ready(S.Rapid) then
-        return S.Rapid:Cast()
-    end
-    if RH.AoE and melee and RH.Ready(S.ExplosiveTrap) then
-        return S.ExplosiveTrap:Cast()
-    end
-    if
-        RH.AoE
-        and RH.ResourceAbove(mana, math.max(tonumber(db.hunterMultiMana) or 35, reserve))
-        and RH.Ready(S.Multi, true)
-    then
-        return S.Multi:Cast()
-    end
-    if spec == "Marksmanship" and RH.ResourceAbove(mana, math.max(30, reserve)) and RH.Ready(S.Aimed, true) then
-        return S.Aimed:Cast()
-    end
-    if melee then
-        if RH.Ready(S.Mongoose, true) then
-            return S.Mongoose:Cast()
-        end
-        if RH.Ready(S.Raptor, true) then
-            return S.Raptor:Cast()
-        end
-    end
-    if RH.ResourceAbove(mana, math.max(tonumber(db.hunterArcaneMana) or 25, reserve)) and RH.Ready(S.Arcane, true) then
-        return S.Arcane:Cast()
-    end
-    if S.Auto:IsAvailable() and not melee then
-        return RH.AutoShotOnce(S.Auto)
-    end
-    if melee then
-        return RH.AttackOnce()
-    end
+
+    return NC.Prio({
+        {
+            S.RevivePet,
+            when = function()
+                return db.hunterPet ~= false and not P:AffectingCombat() and pet:IsDeadOrGhost()
+            end,
+        },
+        {
+            S.CallPet,
+            when = function()
+                return db.hunterPet ~= false and not P:AffectingCombat() and not pet:Exists()
+            end,
+        },
+        {
+            S.Mend,
+            range = "pet",
+            when = function()
+                local need = pvp and math.max(tonumber(db.hunterPetHealHP) or 65, 70) or (tonumber(db.hunterPetHealHP) or 65)
+                return db.hunterPet ~= false
+                    and db.healing ~= false
+                    and petHP
+                    and petHP < need
+                    and not NC.Buff("Mend Pet", "pet")
+            end,
+            note = function()
+                RH.healTarget = "pet"
+            end,
+        },
+        function()
+            if db.maintainBuffs ~= false and aspectName then
+                return NC.Missing(aspect, aspectName, 180)
+            end
+        end,
+        function()
+            RH.healTarget = nil
+            if not RH.ValidTarget() then
+                return NC.STOP
+            end
+        end,
+        {
+            S.Feign,
+            when = function()
+                return db.defensives ~= false
+                    and P:AffectingCombat()
+                    and playerHP
+                    and playerHP <= (tonumber(db.defensiveHP) or 30)
+            end,
+        },
+        { S.Scatter, range = true, when = function() return NC.Interrupts() and RH.ShouldInterrupt() end },
+        { S.Intimidation, range = true, when = function() return NC.Interrupts() and RH.ShouldInterrupt() end },
+        { S.Wing, range = true, when = function() return pvp and melee and not NC.Debuff("Wing Clip") end },
+        {
+            S.Concussive,
+            range = true,
+            when = function()
+                return pvp and db.hunterConcussive ~= false and not NC.Debuff("Concussive Shot")
+            end,
+        },
+        function()
+            if db.maintainBuffs ~= false and RH.TargetWillLive(10) then
+                return NC.Dot(S.Mark, "Hunter's Mark", 90, true)
+            end
+        end,
+        function()
+            if db.useDots ~= false and RH.TargetWillLive(tonumber(db.dotMinTTD) or 8) and RH.ResourceAbove(mana, reserve) then
+                return NC.Dot(S.Serpent, "Serpent Sting", 12, true)
+            end
+        end,
+        { S.Rapid, when = function() return NC.CDs() and RH.Burst end },
+        { S.ExplosiveTrap, when = function() return NC.AoE() and melee end },
+        {
+            S.Multi,
+            range = true,
+            when = function()
+                return NC.AoE() and RH.ResourceAbove(mana, math.max(tonumber(db.hunterMultiMana) or 35, reserve))
+            end,
+        },
+        {
+            S.Aimed,
+            range = true,
+            when = function()
+                return spec == "Marksmanship" and RH.ResourceAbove(mana, math.max(30, reserve))
+            end,
+        },
+        { S.Mongoose, range = true, when = function() return melee end },
+        { S.Raptor, range = true, when = function() return melee end },
+        {
+            S.Arcane,
+            range = true,
+            when = function()
+                return RH.ResourceAbove(mana, math.max(tonumber(db.hunterArcaneMana) or 25, reserve))
+            end,
+        },
+        function()
+            if S.Auto:IsAvailable() and not melee then
+                return RH.AutoShotOnce(S.Auto)
+            end
+        end,
+        function()
+            if melee then
+                return RH.AttackOnce()
+            end
+        end,
+    })
 end)

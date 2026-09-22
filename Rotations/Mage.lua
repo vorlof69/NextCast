@@ -1,4 +1,5 @@
 local RH, P, T = RubimRH, RubimRH.Player, RubimRH.Target
+local NC = RH.NC
 local S = {
     Frostbolt = RH.S(116),
     Fireball = RH.S(133),
@@ -30,117 +31,97 @@ RubimRH.Rotation.SetAPL(8, function()
     local pvp = RH.IsPvPContext(db.mageContext)
     local mana = RH.PowerPercent(0)
     local close = RH.UnitWithin("target", 10)
-    local hp = P:HealthPercentage()
+    local hp = NC.HP()
     local reserve = db.resourceLogic ~= false and (tonumber(db.manaReserve) or 25) or 0
-    if db.maintainBuffs ~= false then
-        local unit = RH.FindMissingBuff("Arcane Intellect")
-        if unit then
-            local cast = RH.CastAllyBuff(S.Intellect, unit, "Arcane Intellect", 300)
-            if cast then
-                return cast
+
+    return NC.Prio({
+        function()
+            if db.maintainBuffs == false then
+                return
             end
-        end
-    end
-    if db.maintainBuffs ~= false then
-        local armor = RH.CastIfMissing(S.FrostArmor, { "Frost Armor", "Ice Armor", "Mage Armor" }, 300)
-        if armor then
-            return armor
-        end
-    end
-    if not RH.ValidTarget() then
-        return nil
-    end
-    if RH.Interrupts and RH.ShouldInterrupt() and RH.Ready(S.Counterspell, true) then
-        return S.Counterspell:Cast()
-    end
-    if pvp and not P:AffectingCombat() and T:Debuff("Polymorph") ~= true and RH.Ready(S.Polymorph, true) then
-        return S.Polymorph:Cast()
-    end
-    if db.defensives ~= false and hp and hp < (tonumber(db.defensiveHP) or 30) - 5 and RH.Ready(S.IceBlock) then
-        return S.IceBlock:Cast()
-    end
-    if
-        db.defensives ~= false
-        and hp
-        and hp < (tonumber(db.defensiveHP) or 30) + 15
-        and close == true
-        and RH.Ready(S.Blink)
-    then
-        return S.Blink:Cast()
-    end
-    if mana and mana < (tonumber(db.mageEvocationMana) or 15) and RH.Ready(S.Evocation) then
-        return S.Evocation:Cast()
-    end
-    if
-        db.mageControl ~= false
-        and (pvp or RH.AoE)
-        and close
-        and T:Debuff("Frost Nova") ~= true
-        and RH.Ready(S.Nova)
-    then
-        return S.Nova:Cast()
-    end
-    if
-        db.mageControl ~= false
-        and close
-        and (pvp or RH.AoE)
-        and RH.ResourceAbove(mana, 35)
-        and RH.Ready(S.Cone, true)
-    then
-        return S.Cone:Cast()
-    end
-    -- Conserve with Wand only after Shoot is actually learned. Early Mages must
-    -- continue using an affordable spell instead of showing a blank recommendation.
-    if not RH.ResourceAbove(mana, reserve) and S.Shoot:IsAvailable() then
-        return RH.RangedFallback(S.Shoot)
-    end
-    if RH.AoE then
-        local aoeMana = tonumber(db.mageAoEMana) or 40
-        if close and RH.ResourceAbove(mana, aoeMana) and RH.Ready(S.ArcaneExplosion) then
-            return S.ArcaneExplosion:Cast()
-        end
-        if RH.ResourceAbove(mana, aoeMana + 5) and RH.Ready(S.Blizzard, true) then
-            return S.Blizzard:Cast()
-        end
-    end
-    if spec == "Arcane" then
-        if RH.Ready(S.ArcaneBlast, true) then
-            return S.ArcaneBlast:Cast()
-        end
-        if RH.Ready(S.Missiles, true) then
-            return S.Missiles:Cast()
-        end
-    elseif spec == "Fire" then
-        if P:Buff("Hot Streak") == true and RH.Ready(S.Pyroblast, true) then
-            return S.Pyroblast:Cast()
-        end
-        if RH.Ready(S.FireBlast, true) then
-            return S.FireBlast:Cast()
-        end
-        if RH.Ready(S.Fireball, true) then
-            return S.Fireball:Cast()
-        end
-        if RH.Ready(S.Scorch, true) then
-            return S.Scorch:Cast()
-        end
-    else
-        if P:Buff("Fingers of Frost") == true and RH.Ready(S.IceLance, true) then
-            return S.IceLance:Cast()
-        end
-        if RH.Ready(S.Frostbolt, true) then
-            return S.Frostbolt:Cast()
-        end
-    end
-    -- Level-aware cross-spec fallback. Automatic defaults to Frost before talent
-    -- points exist, while a new Mage initially knows Fireball.
-    if RH.Ready(S.Fireball, true) then
-        return S.Fireball:Cast()
-    end
-    if RH.Ready(S.Frostbolt, true) then
-        return S.Frostbolt:Cast()
-    end
-    if RH.Ready(S.Missiles, true) then
-        return S.Missiles:Cast()
-    end
-    return RH.RangedFallback(S.Shoot)
+            local unit = RH.FindMissingBuff("Arcane Intellect")
+            if unit then
+                return RH.CastAllyBuff(S.Intellect, unit, "Arcane Intellect", 300)
+            end
+        end,
+        function()
+            if db.maintainBuffs ~= false then
+                return NC.Missing(S.FrostArmor, { "Frost Armor", "Ice Armor", "Mage Armor" }, 300)
+            end
+        end,
+        function()
+            if not RH.ValidTarget() then
+                return NC.STOP
+            end
+        end,
+        { S.Counterspell, range = true, when = function() return NC.Interrupts() and RH.ShouldInterrupt() end },
+        {
+            S.Polymorph,
+            range = true,
+            when = function()
+                return pvp and not P:AffectingCombat() and not NC.Debuff("Polymorph")
+            end,
+        },
+        {
+            S.IceBlock,
+            when = function()
+                return db.defensives ~= false and hp and hp < (tonumber(db.defensiveHP) or 30) - 5
+            end,
+        },
+        {
+            S.Blink,
+            when = function()
+                return db.defensives ~= false
+                    and hp
+                    and hp < (tonumber(db.defensiveHP) or 30) + 15
+                    and close == true
+            end,
+        },
+        { S.Evocation, when = function() return mana and mana < (tonumber(db.mageEvocationMana) or 15) end },
+        {
+            S.Nova,
+            when = function()
+                return db.mageControl ~= false and (pvp or NC.AoE()) and close and not NC.Debuff("Frost Nova")
+            end,
+        },
+        {
+            S.Cone,
+            range = true,
+            when = function()
+                return db.mageControl ~= false and close and (pvp or NC.AoE()) and RH.ResourceAbove(mana, 35)
+            end,
+        },
+        function()
+            if not RH.ResourceAbove(mana, reserve) and S.Shoot:IsAvailable() then
+                return RH.RangedFallback(S.Shoot)
+            end
+        end,
+        {
+            S.ArcaneExplosion,
+            when = function()
+                return NC.AoE() and close and RH.ResourceAbove(mana, tonumber(db.mageAoEMana) or 40)
+            end,
+        },
+        {
+            S.Blizzard,
+            range = true,
+            when = function()
+                return NC.AoE() and RH.ResourceAbove(mana, (tonumber(db.mageAoEMana) or 40) + 5)
+            end,
+        },
+        { S.ArcaneBlast, range = true, when = function() return spec == "Arcane" end },
+        { S.Missiles, range = true, when = function() return spec == "Arcane" end },
+        { S.Pyroblast, range = true, when = function() return spec == "Fire" and NC.Buff("Hot Streak") end },
+        { S.FireBlast, range = true, when = function() return spec == "Fire" end },
+        { S.Fireball, range = true, when = function() return spec == "Fire" end },
+        { S.Scorch, range = true, when = function() return spec == "Fire" end },
+        { S.IceLance, range = true, when = function() return spec ~= "Arcane" and spec ~= "Fire" and NC.Buff("Fingers of Frost") end },
+        { S.Frostbolt, range = true, when = function() return spec ~= "Arcane" and spec ~= "Fire" end },
+        { S.Fireball, range = true },
+        { S.Frostbolt, range = true },
+        { S.Missiles, range = true },
+        function()
+            return RH.RangedFallback(S.Shoot)
+        end,
+    })
 end)

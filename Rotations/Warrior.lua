@@ -1,4 +1,5 @@
 local RH, P, T = RubimRH, RubimRH.Player, RubimRH.Target
+local NC = RH.NC
 local S = {
     Attack = RH.S(6603),
     Charge = RH.S(100),
@@ -56,19 +57,7 @@ local function queueSwing(spell)
         return nil
     end
     HeroLib.State.nextSwingSuggestedAt = now
-    return spell:Cast()
-end
-local function needsTaunt()
-    local okExists, exists = pcall(UnitExists, "targettarget")
-    if not okExists or HeroLib.Secret(exists) or not exists then
-        return false
-    end
-    local okSelf, isSelf = pcall(UnitIsUnit, "targettarget", "player")
-    if okSelf and not HeroLib.Secret(isSelf) and isSelf then
-        return false
-    end
-    local okFriend, isFriend = pcall(UnitIsFriend, "player", "targettarget")
-    return okFriend and not HeroLib.Secret(isFriend) and isFriend == true
+    return NC.Go(spell)
 end
 RubimRH.Rotation.SetAPL(1, function()
     if P:IsDeadOrGhost() or P:IsCasting() or not RH.ValidTarget() then
@@ -76,8 +65,8 @@ RubimRH.Rotation.SetAPL(1, function()
     end
     local db = RH.EnsureDB()
     local rage = RH.Power(1)
-    local targetHP = T:HealthPercentage()
-    local playerHP = P:HealthPercentage()
+    local targetHP = NC.HP("target")
+    local playerHP = NC.HP()
     local ttd = T:TimeToDie()
     local shield = RH.HasShield()
     local formOK, formValue = pcall(GetShapeshiftForm)
@@ -95,7 +84,7 @@ RubimRH.Rotation.SetAPL(1, function()
     local form = RH.Rotation.stance
     if RH.ShiftPending() then
         if HeroLib.State.shiftAction == "enter" and HeroLib.State.shiftSpell then
-            return HeroLib.State.shiftSpell:Cast()
+            return NC.Go(HeroLib.State.shiftSpell)
         end
         return nil
     end
@@ -112,254 +101,230 @@ RubimRH.Rotation.SetAPL(1, function()
         and bleedable
         and (pvp or not targetHP or targetHP > 35)
         and (pvp or not ttd or ttd > 8)
-        and T:Debuff("Rend") ~= true
+        and not NC.Debuff("Rend")
     local sunderCap = tank and (tonumber(db.tankSunderStacks) or 5) or (tonumber(db.sunderStacks) or 2)
 
-    -- Gryph-style opener and utility ordering, adapted to Forever's learned spellbook.
-    if tank and form ~= 2 and S.DefensiveStance:IsAvailable() and S.DefensiveStance:IsReady() then
-        RH.NoteShift("enter", S.DefensiveStance)
-        return S.DefensiveStance:Cast()
-    end
-    if arms and form ~= 1 and S.BattleStance:IsAvailable() and S.BattleStance:IsReady() then
-        RH.NoteShift("enter", S.BattleStance)
-        return S.BattleStance:Cast()
-    end
-    if
-        fury
-        and (not P:AffectingCombat() or needRend or not S.BerserkerStance:IsAvailable())
-        and form ~= 1
-        and S.BattleStance:IsReady()
-    then
-        RH.NoteShift("enter", S.BattleStance)
-        return S.BattleStance:Cast()
-    end
-    if not P:AffectingCombat() and RH.Ready(S.Charge, true) then
-        return S.Charge:Cast()
-    end
-    if
-        P:AffectingCombat()
-        and fury
-        and form == 3
-        and RH.Ready(S.Intercept, true)
-        and RH.UnitWithin("target", 10) == false
-    then
-        return S.Intercept:Cast()
-    end
-    if
-        fury
-        and P:AffectingCombat()
-        and not needRend
-        and S.BerserkerStance:IsAvailable()
-        and form ~= 3
-        and S.BerserkerStance:IsReady()
-    then
-        RH.NoteShift("enter", S.BerserkerStance)
-        return S.BerserkerStance:Cast()
-    end
-    if RH.Interrupts and RH.ShouldInterrupt() and shield and RH.Ready(S.ShieldBash, true) then
-        return S.ShieldBash:Cast()
-    end
-    if
-        pvp
-        and RH.Interrupts
-        and RH.ShouldInterrupt()
-        and T:Debuff("Concussion Blow") ~= true
-        and RH.Ready(S.Concussion, true)
-    then
-        return S.Concussion:Cast()
-    end
-    if tank and db.warriorTaunt ~= false and needsTaunt() then
-        if RH.Ready(S.Taunt, true) then
-            return S.Taunt:Cast()
-        end
-        if RH.Ready(S.Mocking, true) then
-            return S.Mocking:Cast()
-        end
-    end
-    if
-        tank
-        and db.warriorTaunt ~= false
-        and RH.AoE
-        and needsTaunt()
-        and RH.CountNearbyEnemies() >= 3
-        and RH.Ready(S.Challenging)
-    then
-        return S.Challenging:Cast()
-    end
-    if fury and RH.CDs and P:Buff("Berserker Rage") ~= true and RH.Ready(S.BerserkerRage) then
-        return S.BerserkerRage:Cast()
-    end
-    if RH.CDs and (rage == nil or rage < 20) and (not playerHP or playerHP > 40) and RH.Ready(S.Bloodrage) then
-        return S.Bloodrage:Cast()
-    end
-
-    if db.defensives ~= false and db.warriorDefensives ~= false then
-        if playerHP and playerHP < (tonumber(db.shieldWallHP) or 35) and shield and RH.Ready(S.ShieldWall) then
-            return S.ShieldWall:Cast()
-        end
-        if playerHP and playerHP < 32 and RH.Ready(S.LastStand) then
-            return S.LastStand:Cast()
-        end
-        if tank and playerHP and playerHP < 72 and shield and enough(10) and RH.Ready(S.ShieldBlock) then
-            return S.ShieldBlock:Cast()
-        end
-    end
-    if db.warriorVictory ~= false and (not playerHP or playerHP <= 65) and RH.Ready(S.Victory, true) then
-        return S.Victory:Cast()
-    end
-    if targetHP and targetHP <= 20 and RH.Ready(S.Execute, true) then
-        return S.Execute:Cast()
-    end
-    if pvp and T:Debuff("Hamstring") ~= true and enough(10) and RH.Ready(S.Hamstring, true) then
-        return S.Hamstring:Cast()
-    end
-    if pvp and T:Debuff("Disarm") ~= true and RH.Ready(S.Disarm, true) then
-        return S.Disarm:Cast()
-    end
-    if
-        pvp
-        and db.defensives ~= false
-        and playerHP
-        and playerHP < (tonumber(db.defensiveHP) or 30)
-        and RH.Ready(S.Intimidating)
-    then
-        return S.Intimidating:Cast()
-    end
-
-    if
-        RH.CDs
-        and RH.AoE
-        and enough(tonumber(db.sweepingRage) or 50)
-        and (not ttd or ttd > 10)
-        and RH.Ready(S.Sweeping)
-    then
-        return S.Sweeping:Cast()
-    end
-    -- Death Wish is a full offensive cooldown (bonus damage, extra damage taken) --
-    -- hold it for Burst mode instead of firing the instant it's off cooldown.
-    if RH.CDs and RH.Burst and (not playerHP or playerHP > 45) and (not ttd or ttd > 15) and RH.Ready(S.DeathWish) then
-        return S.DeathWish:Cast()
-    end
-    if arms and RH.Ready(S.Overpower, true) then
-        return S.Overpower:Cast()
-    end
-
-    if
-        db.maintainBuffs ~= false
-        and db.warriorShout ~= false
-        and enough(10)
-    then
-        local shout = RH.CastIfMissing(S.BattleShout, { "Battle Shout", "Greater Battle Shout" }, 90)
-        if shout then
-            return shout
-        end
-    end
-    if
-        db.warriorShout ~= false
-        and (tank or RH.AoE or pvp)
-        and (pvp or not ttd or ttd > 10)
-        and enough(10)
-    then
-        local demo = RH.CastIfDebuffMissing(S.Demoralizing, "Demoralizing Shout", 24)
-        if demo then
-            return demo
-        end
-    end
-    if needRend then
-        local rend = RH.CastIfDebuffMissing(S.Rend, "Rend", 15, true)
-        if rend then
-            return rend
-        end
-    end
-
-    if tank then
-        if RH.Ready(S.ShieldSlam, true) then
-            return S.ShieldSlam:Cast()
-        end
-        if RH.Ready(S.Revenge, true) then
-            return S.Revenge:Cast()
-        end
-        if RH.AoE and enough(20) then
-            local clap = RH.CastIfDebuffMissing(S.Thunder, "Thunder Clap", 18, true)
-            if clap then
-                return clap
+    return NC.Prio({
+        {
+            S.DefensiveStance,
+            when = function()
+                return tank and form ~= 2 and S.DefensiveStance:IsAvailable() and S.DefensiveStance:IsReady()
+            end,
+            note = function()
+                RH.NoteShift("enter", S.DefensiveStance)
+            end,
+        },
+        {
+            S.BattleStance,
+            when = function()
+                return arms and form ~= 1 and S.BattleStance:IsAvailable() and S.BattleStance:IsReady()
+            end,
+            note = function()
+                RH.NoteShift("enter", S.BattleStance)
+            end,
+        },
+        {
+            S.BattleStance,
+            when = function()
+                return fury
+                    and (not P:AffectingCombat() or needRend or not S.BerserkerStance:IsAvailable())
+                    and form ~= 1
+                    and S.BattleStance:IsReady()
+            end,
+            note = function()
+                RH.NoteShift("enter", S.BattleStance)
+            end,
+        },
+        { S.Charge, range = true, when = function() return not P:AffectingCombat() end },
+        {
+            S.Intercept,
+            range = true,
+            when = function()
+                return P:AffectingCombat() and fury and form == 3 and RH.UnitWithin("target", 10) == false
+            end,
+        },
+        {
+            S.BerserkerStance,
+            when = function()
+                return fury
+                    and P:AffectingCombat()
+                    and not needRend
+                    and S.BerserkerStance:IsAvailable()
+                    and form ~= 3
+                    and S.BerserkerStance:IsReady()
+            end,
+            note = function()
+                RH.NoteShift("enter", S.BerserkerStance)
+            end,
+        },
+        { S.ShieldBash, range = true, when = function() return NC.Interrupts() and RH.ShouldInterrupt() and shield end },
+        {
+            S.Concussion,
+            range = true,
+            when = function()
+                return pvp and NC.Interrupts() and RH.ShouldInterrupt() and not NC.Debuff("Concussion Blow")
+            end,
+        },
+        { S.Taunt, range = true, when = function() return tank and db.warriorTaunt ~= false and RH.NeedsTaunt() end },
+        { S.Mocking, range = true, when = function() return tank and db.warriorTaunt ~= false and RH.NeedsTaunt() end },
+        {
+            S.Challenging,
+            when = function()
+                return tank and db.warriorTaunt ~= false and NC.AoE() and RH.NeedsTaunt() and NC.Enemies() >= 3
+            end,
+        },
+        { S.BerserkerRage, when = function() return fury and NC.CDs() and not NC.Buff("Berserker Rage") end },
+        {
+            S.Bloodrage,
+            when = function()
+                return NC.CDs() and (rage == nil or rage < 20) and (not playerHP or playerHP > 40)
+            end,
+        },
+        {
+            S.ShieldWall,
+            when = function()
+                return db.defensives ~= false
+                    and db.warriorDefensives ~= false
+                    and playerHP
+                    and playerHP < (tonumber(db.shieldWallHP) or 35)
+                    and shield
+            end,
+        },
+        {
+            S.LastStand,
+            when = function()
+                return db.defensives ~= false and db.warriorDefensives ~= false and playerHP and playerHP < 32
+            end,
+        },
+        {
+            S.ShieldBlock,
+            when = function()
+                return db.defensives ~= false
+                    and db.warriorDefensives ~= false
+                    and tank
+                    and playerHP
+                    and playerHP < 72
+                    and shield
+                    and enough(10)
+            end,
+        },
+        { S.Victory, range = true, when = function() return db.warriorVictory ~= false and (not playerHP or playerHP <= 65) end },
+        { S.Execute, range = true, when = function() return targetHP and targetHP <= 20 end },
+        { S.Hamstring, range = true, when = function() return pvp and not NC.Debuff("Hamstring") and enough(10) end },
+        { S.Disarm, range = true, when = function() return pvp and not NC.Debuff("Disarm") end },
+        {
+            S.Intimidating,
+            when = function()
+                return pvp and db.defensives ~= false and playerHP and playerHP < (tonumber(db.defensiveHP) or 30)
+            end,
+        },
+        {
+            S.Sweeping,
+            when = function()
+                return NC.CDs() and NC.AoE() and enough(tonumber(db.sweepingRage) or 50) and (not ttd or ttd > 10)
+            end,
+        },
+        {
+            S.DeathWish,
+            when = function()
+                return NC.CDs() and RH.Burst and (not playerHP or playerHP > 45) and (not ttd or ttd > 15)
+            end,
+        },
+        { S.Overpower, range = true, when = function() return arms end },
+        function()
+            if db.maintainBuffs ~= false and db.warriorShout ~= false and enough(10) then
+                return NC.Missing(S.BattleShout, { "Battle Shout", "Greater Battle Shout" }, 90)
             end
-        end
-        if
-            not pvp
-            and db.warriorSunder ~= false
-            and sunderCap > 0
-            and enough(15)
-            and (HeroLib.State.targetStacks["Sunder Armor"] or 0) < sunderCap
-            and RH.Ready(S.Sunder, true)
-        then
-            return S.Sunder:Cast()
-        end
-        if RH.AoE and rage and enough(tonumber(db.cleaveRage) or 40) and RH.Ready(S.Cleave, true) then
-            local nextSwing = queueSwing(S.Cleave)
-            if nextSwing then
-                return nextSwing
+        end,
+        function()
+            if db.warriorShout ~= false and (tank or NC.AoE() or pvp) and (pvp or not ttd or ttd > 10) and enough(10) then
+                return NC.Dot(S.Demoralizing, "Demoralizing Shout", 24)
             end
-        end
-        if rage and enough(tonumber(db.heroicRage) or 60) and RH.Ready(S.Heroic, true) then
-            local nextSwing = queueSwing(S.Heroic)
-            if nextSwing then
-                return nextSwing
+        end,
+        function()
+            if needRend then
+                return NC.Dot(S.Rend, "Rend", 15, true)
             end
-        end
-        return RH.AttackOnce()
-    end
-
-    if fury and RH.Ready(S.Bloodthirst, true) then
-        return S.Bloodthirst:Cast()
-    end
-    if arms and RH.Ready(S.MortalStrike, true) then
-        return S.MortalStrike:Cast()
-    end
-    if fury and RH.AoE and RH.Ready(S.Whirlwind) then
-        return S.Whirlwind:Cast()
-    end
-    if (creature == "Giant" or creature == "Dragonkin") and RH.Ready(S.Spearing, true) then
-        return S.Spearing:Cast()
-    end
-    if RH.AoE and rage and enough(tonumber(db.cleaveRage) or 40) and RH.Ready(S.Cleave, true) then
-        local nextSwing = queueSwing(S.Cleave)
-        if nextSwing then
-            return nextSwing
-        end
-    end
-    if RH.AoE and enough(20) then
-        local clap = RH.CastIfDebuffMissing(S.Thunder, "Thunder Clap", 18, true)
-        if clap then
-            return clap
-        end
-    end
-    if
-        arms
-        and db.warriorSlam ~= false
-        and enough(tonumber(db.slamRage) or 30)
-        and (not ttd or ttd > 4)
-        and RH.Ready(S.Slam, true)
-    then
-        return S.Slam:Cast()
-    end
-    if
-        not pvp
-        and db.warriorSunder ~= false
-        and sunderCap > 0
-        and enough(15)
-        and (HeroLib.State.targetStacks["Sunder Armor"] or 0) < sunderCap
-        and ttd
-        and ttd > 15
-        and RH.Ready(S.Sunder, true)
-    then
-        return S.Sunder:Cast()
-    end
-    if rage and rage >= (tonumber(db.heroicRage) or 60) and RH.Ready(S.Heroic, true) then
-        local nextSwing = queueSwing(S.Heroic)
-        if nextSwing then
-            return nextSwing
-        end
-    end
-    return RH.AttackOnce()
+        end,
+        function()
+            if not tank then
+                return
+            end
+            return NC.Prio({
+                { S.ShieldSlam, range = true },
+                { S.Revenge, range = true },
+                function()
+                    if NC.AoE() and enough(20) then
+                        return NC.Dot(S.Thunder, "Thunder Clap", 18, true)
+                    end
+                end,
+                {
+                    S.Sunder,
+                    range = true,
+                    when = function()
+                        return not pvp
+                            and db.warriorSunder ~= false
+                            and sunderCap > 0
+                            and enough(15)
+                            and (HeroLib.State.targetStacks["Sunder Armor"] or 0) < sunderCap
+                    end,
+                },
+                function()
+                    if NC.AoE() and rage and enough(tonumber(db.cleaveRage) or 40) and NC.Ready(S.Cleave, true) then
+                        return queueSwing(S.Cleave)
+                    end
+                end,
+                function()
+                    if rage and enough(tonumber(db.heroicRage) or 60) and NC.Ready(S.Heroic, true) then
+                        return queueSwing(S.Heroic)
+                    end
+                end,
+                function()
+                    return RH.AttackOnce() or NC.STOP
+                end,
+            })
+        end,
+        { S.Bloodthirst, range = true, when = function() return fury end },
+        { S.MortalStrike, range = true, when = function() return arms end },
+        { S.Whirlwind, when = function() return fury and NC.AoE() end },
+        { S.Spearing, range = true, when = function() return creature == "Giant" or creature == "Dragonkin" end },
+        function()
+            if NC.AoE() and rage and enough(tonumber(db.cleaveRage) or 40) and NC.Ready(S.Cleave, true) then
+                return queueSwing(S.Cleave)
+            end
+        end,
+        function()
+            if NC.AoE() and enough(20) then
+                return NC.Dot(S.Thunder, "Thunder Clap", 18, true)
+            end
+        end,
+        {
+            S.Slam,
+            range = true,
+            when = function()
+                return arms and db.warriorSlam ~= false and enough(tonumber(db.slamRage) or 30) and (not ttd or ttd > 4)
+            end,
+        },
+        {
+            S.Sunder,
+            range = true,
+            when = function()
+                return not pvp
+                    and db.warriorSunder ~= false
+                    and sunderCap > 0
+                    and enough(15)
+                    and (HeroLib.State.targetStacks["Sunder Armor"] or 0) < sunderCap
+                    and ttd
+                    and ttd > 15
+            end,
+        },
+        function()
+            if rage and rage >= (tonumber(db.heroicRage) or 60) and NC.Ready(S.Heroic, true) then
+                return queueSwing(S.Heroic)
+            end
+        end,
+        function()
+            return RH.AttackOnce()
+        end,
+    })
 end)

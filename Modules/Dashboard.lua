@@ -64,11 +64,11 @@ if not titlebg:GetTexture() then
     titlebg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
 end
 titlebg:SetPoint("TOPLEFT", 12, -6)
-titlebg:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -168, -26)
+titlebg:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -14, -28)
 local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
 local crest = frame:CreateTexture(nil, "ARTWORK")
-crest:SetSize(26, 26)
-crest:SetPoint("TOPLEFT", 18, -8)
+crest:SetSize(22, 22)
+crest:SetPoint("TOPLEFT", 18, -9)
 crest:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
 if coords then
     crest:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
@@ -78,9 +78,6 @@ title:SetPoint("LEFT", crest, "RIGHT", 8, 0)
 title:SetText("NextCast")
 local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 subtitle:SetPoint("LEFT", title, "RIGHT", 10, 0)
-local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-close:SetPoint("TOPRIGHT", -5, -4)
-close:SetScale(0.88)
 
 local function skinButton(parent, w, h, label)
     local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
@@ -128,20 +125,25 @@ local function panelButton(parent, w, h, label)
     end
     return skinButton(parent, w, h, label)
 end
-local active = skinButton(frame, 54, 20, "ON")
-active:SetPoint("RIGHT", close, "LEFT", -2, -1)
-local aoe = skinButton(frame, 54, 20, "AUTO")
-aoe:SetPoint("RIGHT", active, "LEFT", -3, 0)
-local cds = skinButton(frame, 54, 20, "CDS")
-cds:SetPoint("RIGHT", aoe, "LEFT", -3, 0)
+local close = skinButton(frame, 22, 20, "X")
+close:SetPoint("TOPRIGHT", -14, -8)
+close:SetScript("OnClick", function()
+    frame:Hide()
+end)
+local active = skinButton(frame, 48, 20, "ON")
+active:SetPoint("RIGHT", close, "LEFT", -4, 0)
+local aoe = skinButton(frame, 48, 20, "AUTO")
+aoe:SetPoint("RIGHT", active, "LEFT", -4, 0)
+local cds = skinButton(frame, 48, 20, "CDS")
+cds:SetPoint("RIGHT", aoe, "LEFT", -4, 0)
 
 local pages = {}
 local tabs = {}
 local selected = 1
 for i = 1, 3 do
     pages[i] = CreateFrame("Frame", nil, frame)
-    pages[i]:SetPoint("TOPLEFT", 18, -38)
-    pages[i]:SetPoint("BOTTOMRIGHT", -18, 14)
+    pages[i]:SetPoint("TOPLEFT", 18, -36)
+    pages[i]:SetPoint("BOTTOMRIGHT", -18, 42)
     pages[i]:Hide()
 end
 local labels = { "Play", "Rotation", "Spells" }
@@ -152,17 +154,12 @@ local function SelectTab(index)
     end
     for i, tab in ipairs(tabs) do
         local on = i == index
-        if on and PanelTemplates_SelectTab then
-            pcall(PanelTemplates_SelectTab, tab)
-        elseif (not on) and PanelTemplates_DeselectTab then
-            pcall(PanelTemplates_DeselectTab, tab)
-        end
         if tab.text then
-            tab.text:SetTextColor(on and 1 or 0.72, on and 0.82 or 0.7, on and 0 or 0.45)
+            tab.text:SetTextColor(on and 1 or 0.72, on and 0.82 or 0.62, on and 0 or 0.4)
         end
         if tab.SetBackdropColor then
-            pcall(tab.SetBackdropColor, tab, 0, 0, 0, on and 0.7 or 0.4)
-            pcall(tab.SetBackdropBorderColor, tab, 0.85, 0.68, 0.22, on and 1 or 0.7)
+            pcall(tab.SetBackdropColor, tab, on and 0.32 or 0, on and 0.24 or 0, on and 0.08 or 0, on and 0.95 or 0.55)
+            pcall(tab.SetBackdropBorderColor, tab, 0.85, 0.68, 0.22, on and 1 or 0.75)
         end
     end
     if index == 3 and RH.RefreshClassDashboard then
@@ -170,28 +167,12 @@ local function SelectTab(index)
     end
 end
 for i, label in ipairs(labels) do
-    local b
-    local ok, tab = pcall(function()
-        return CreateFrame("Button", "NextCastTab" .. i, frame, "CharacterFrameTabButtonTemplate")
-    end)
-    if ok and tab then
-        b = tab
-        b:SetText(label)
-        b.text = b:GetFontString()
-        if PanelTemplates_TabResize then
-            pcall(PanelTemplates_TabResize, b, 0, 96)
-        end
-    else
-        b = skinButton(frame, 96, 24, label)
-    end
+    local b = skinButton(frame, 108, 22, label)
     if i == 1 then
-        b:ClearAllPoints()
-        b:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 16, 2)
+        b:SetPoint("BOTTOMLEFT", 18, 14)
     else
-        b:ClearAllPoints()
-        b:SetPoint("LEFT", tabs[i - 1], "RIGHT", -16, 0)
+        b:SetPoint("LEFT", tabs[i - 1], "RIGHT", 6, 0)
     end
-    b:SetFrameLevel((frame:GetFrameLevel() or 1) + 4)
     b:SetScript("OnClick", function()
         SelectTab(i)
     end)
@@ -945,14 +926,14 @@ frame:SetScript("OnHide", function()
         openDropdown = nil
     end
 end)
-local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footer:SetPoint("BOTTOMLEFT", 22, 16)
-footer:SetText("6.4.8")
-footer:SetTextColor(0.72, 0.62, 0.32)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-footerRight:SetPoint("BOTTOMRIGHT", -22, 16)
+footerRight:SetPoint("BOTTOMRIGHT", -18, 18)
 footerRight:SetText("/nc")
 footerRight:SetTextColor(color.r * 0.7, color.g * 0.7, color.b * 0.7)
+local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+footer:SetPoint("RIGHT", footerRight, "LEFT", -10, 0)
+footer:SetText("6.5.0")
+footer:SetTextColor(0.72, 0.62, 0.32)
 local function fitWindow()
     frame:SetScale(math.max(0.4, math.min(1, (UIParent:GetWidth() - 24) / 800, (UIParent:GetHeight() - 24) / 560)))
     RH.RestoreFramePosition(frame, "menuPosition")

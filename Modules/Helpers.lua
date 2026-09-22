@@ -515,9 +515,45 @@ function RH.NoteShift(action, spell)
     HL.State.shiftAction = action
     HL.State.shiftSpell = spell
     HL.State.shiftAt = GetTime()
+    if action == "enter" and spell and spell.Name then
+        local n = spell:Name() or ""
+        if string.find(string.lower(n), "cat", 1, true) then
+            HL.State.knownForm = "cat"
+        else
+            HL.State.knownForm = "bear"
+        end
+        HL.State.knownFormAt = GetTime()
+    elseif action == "leave" then
+        HL.State.knownForm = nil
+    end
 end
 function RH.ShiftPending()
-    return HL.State.shiftAt and GetTime() - HL.State.shiftAt < 1.8
+    return HL.State.shiftAt and GetTime() - HL.State.shiftAt < 2.6
+end
+function RH.TrackForm()
+    local _, index = RH.ActiveForm()
+    local bear = RH.Player and RH.Player:Buff("Bear Form")
+    if bear ~= true and RH.Player then
+        bear = RH.Player:Buff("Dire Bear Form")
+    end
+    local cat = RH.Player and RH.Player:Buff("Cat Form")
+    if (index and index > 0) or bear == true or cat == true then
+        if cat == true then
+            HL.State.knownForm = "cat"
+        elseif bear == true then
+            HL.State.knownForm = "bear"
+        elseif index and index > 0 then
+            local level = UnitLevel("player")
+            if type(level) == "number" and not HL.Secret(level) and level < 20 then
+                HL.State.knownForm = "bear"
+            elseif not HL.State.knownForm then
+                HL.State.knownForm = "bear"
+            end
+        end
+        HL.State.knownFormAt = GetTime()
+    elseif bear == false and cat == false and (not index or index == 0) then
+        HL.State.knownForm = nil
+    end
 end
 function RH.InForm(needle)
     if not needle then
@@ -542,6 +578,23 @@ function RH.InForm(needle)
     if needle == "Bear Form" and RH.Player:Buff("Dire Bear Form") == true then
         return true
     end
+    if HL.State.knownForm == "bear" and (needle == "Bear Form" or needle == "Dire Bear Form") then
+        local buff = RH.Player:Buff("Bear Form")
+        if buff ~= true then
+            buff = RH.Player:Buff("Dire Bear Form")
+        end
+        if buff == false and (not index or index == 0) then
+            return false
+        end
+        return true
+    end
+    if HL.State.knownForm == "cat" and needle == "Cat Form" then
+        local buff = RH.Player:Buff("Cat Form")
+        if buff == false and (not index or index == 0) then
+            return false
+        end
+        return true
+    end
     -- Secret aura names: Feral below 20 only has Bear. Treat any shapeshift as Bear.
     if needle == "Bear Form" and index and index > 0 then
         local level = UnitLevel("player")
@@ -552,6 +605,9 @@ function RH.InForm(needle)
     return false
 end
 function RH.IsShapeshifted()
+    if HL.State.knownForm == "bear" or HL.State.knownForm == "cat" then
+        return true
+    end
     local _, index = RH.ActiveForm()
     if index and index > 0 then
         return true

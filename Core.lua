@@ -773,6 +773,9 @@ function RH.MainRotation()
     local ok, result = pcall(apl)
     if ok then
         RH.aplRetryAt = nil
+        if result == (RH.NC and RH.NC.STOP) or (result and type(result) ~= "number") then
+            result = nil
+        end
         -- Only substitute a racial when the apl just decided this tick is a
         -- DPS action (healTarget nil) -- never preempt a heal recommendation.
         if RH.CDs and RH.Burst and not RH.healTarget then
