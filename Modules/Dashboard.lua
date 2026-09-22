@@ -58,11 +58,9 @@ local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[token]
 local crest = frame:CreateTexture(nil, "ARTWORK")
 crest:SetSize(26, 26)
 crest:SetPoint("TOPLEFT", 16, -8)
-crest:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+crest:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
 if coords then
-    local dx = (coords[2] - coords[1]) * 0.22
-    local dy = (coords[4] - coords[3]) * 0.22
-    crest:SetTexCoord(coords[1] + dx, coords[2] - dx, coords[3] + dy, coords[4] - dy)
+    crest:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
 end
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 title:SetPoint("LEFT", crest, "RIGHT", 8, 0)
@@ -934,7 +932,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("LEFT", subtitle, "RIGHT", 14, 0)
-footer:SetText("6.4.0")
+footer:SetText("6.4.1")
 footer:SetTextColor(0.72, 0.62, 0.32)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -22, 18)
@@ -967,9 +965,9 @@ mini:SetBackdropBorderColor(0.58, 0.48, 0.25, 1)
 local mt = mini:CreateTexture(nil, "ARTWORK")
 mt:SetPoint("TOPLEFT", 5, -5)
 mt:SetPoint("BOTTOMRIGHT", -5, 5)
-mt:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+mt:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
 if coords then
-    mt:SetTexCoord(coords[1] + 0.012, coords[2] - 0.012, coords[3] + 0.012, coords[4] - 0.012)
+    mt:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
 end
 mini:SetScript("OnEnter", function(s)
     s:SetBackdropBorderColor(color.r, color.g, color.b, 1)

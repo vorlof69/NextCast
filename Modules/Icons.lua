@@ -73,6 +73,11 @@ wellBg:SetColorTexture(0.02, 0.022, 0.028, 1)
 local icon = well:CreateTexture(nil, "ARTWORK")
 icon:SetAllPoints()
 icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+local classLetter = well:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+classLetter:SetPoint("CENTER")
+classLetter:SetText((class:sub(1, 1) or "?"))
+classLetter:SetTextColor(cc.r, cc.g, cc.b)
+classLetter:Hide()
 
 local sweep
 pcall(function()
@@ -103,15 +108,21 @@ nameText:SetWidth(60)
 nameText:SetJustifyH("CENTER")
 nameText:SetScale(0.9)
 
-local function cropClassIcon()
+local function showIdleClass()
     local c = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
-    icon:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+    icon:ClearAllPoints()
+    icon:SetSize(56, 56)
+    icon:SetPoint("CENTER")
+    icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
     if c then
-        local dx = (c[2] - c[1]) * 0.22
-        local dy = (c[4] - c[3]) * 0.22
-        icon:SetTexCoord(c[1] + dx, c[2] - dx, c[3] + dy, c[4] - dy)
+        icon:SetTexCoord(c[1], c[2], c[3], c[4])
+        classLetter:Hide()
+        icon:SetAlpha(1)
     else
-        icon:SetTexCoord(0.22, 0.78, 0.22, 0.78)
+        icon:SetTexture(WHITE)
+        icon:SetVertexColor(cc.r * 0.18, cc.g * 0.18, cc.b * 0.18, 1)
+        icon:SetTexCoord(0, 1, 0, 1)
+        classLetter:Show()
     end
 end
 
@@ -168,10 +179,13 @@ f:SetScript("OnUpdate", function(_, dt)
         end
     end
     if tex then
+        icon:ClearAllPoints()
+        icon:SetAllPoints()
         icon:SetTexture(tex)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:SetVertexColor(1, 1, 1, 1)
         icon:SetAlpha(1)
+        classLetter:Hide()
         pcall(icon.SetDesaturated, icon, false)
         local label = name or ""
         if RH.healTarget then
@@ -189,9 +203,7 @@ f:SetScript("OnUpdate", function(_, dt)
             end
         end
     else
-        cropClassIcon()
-        icon:SetVertexColor(1, 1, 1, 1)
-        icon:SetAlpha(1)
+        showIdleClass()
         pcall(icon.SetDesaturated, icon, false)
         local paused = RH.EnsureDB().enabled == false
         nameText:SetText(paused and "Off" or "Ready")
