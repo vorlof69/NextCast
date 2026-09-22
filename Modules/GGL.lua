@@ -20,10 +20,8 @@ local RH = RubimRH
 --   Action TargetColor 1x1 @ UIParent TOPLEFT 163, 0  (Action HealingEngine)
 --
 -- Dual protocol so ExtraIcon GGL and Action GGL both see the heal unit.
--- Heals/buffs: ExtraIcon GGL clicks ST and presses the matching bar key.
--- Put the NextCast macro (Modules/Macros.lua) on that slot via
--- /nc → Macros → PLACE ON BAR so the press is [@player]/[@partyN], not
--- the raw spell on the current enemy.
+-- Heals: TargetColor paints the ally, SnapHealTarget puts them on target,
+-- GGL presses the raw spell on the scanned bar. No macros, no TMW.
 --
 -- Contrast / gamma / nameplate CVars are NOT touched.
 

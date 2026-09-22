@@ -109,19 +109,17 @@ tabBar:SetHeight(32)
 local pages = {}
 local tabs = {}
 local selected = 1
-for i = 1, 3 do
+for i = 1, 2 do
     pages[i] = CreateFrame("Frame", nil, frame)
     pages[i]:SetPoint("TOPLEFT", 14, -98)
     pages[i]:SetPoint("BOTTOMRIGHT", -14, 32)
     pages[i]:Hide()
 end
-local labels = { "Overview", "Abilities", "Macros" }
-local tabPageOrder = { 1, 2, 3 }
+local labels = { "Overview", "Abilities" }
 local function SelectTab(index)
     selected = index
-    local activePage = tabPageOrder[index]
     for i, page in ipairs(pages) do
-        page:SetShown(i == activePage)
+        page:SetShown(i == index)
     end
     for i, tab in ipairs(tabs) do
         local on = i == index
@@ -132,23 +130,13 @@ local function SelectTab(index)
             tab.line:SetShown(on)
         end
     end
-    if activePage == 2 and RH.RefreshClassDashboard then
+    if index == 2 and RH.RefreshClassDashboard then
         RH.RefreshClassDashboard()
     end
-    if activePage == 3 and RH.RefreshMacroDashboard then
-        RH.RefreshMacroDashboard()
-    end
-end
-function RH.OpenMacroTab()
-    if not frame:IsShown() then
-        RH.RefreshDashboard()
-        frame:Show()
-    end
-    SelectTab(3)
 end
 for i, label in ipairs(labels) do
-    local b = skinButton(tabBar, 226, 28, label)
-    b:SetPoint("LEFT", (i - 1) * 232, 0)
+    local b = skinButton(tabBar, 340, 28, label)
+    b:SetPoint("LEFT", (i - 1) * 348, 0)
     b.line = b:CreateTexture(nil, "OVERLAY")
     b.line:SetTexture(WHITE)
     b.line:SetHeight(2)
@@ -361,140 +349,6 @@ scaleCaption:SetPoint("TOPLEFT", 360, -118)
 scaleCaption:SetText("ICON SCALE")
 scaleCaption:SetTextColor(0.52, 0.54, 0.58)
 generalControls[#generalControls + 1] = dropdown(switches, "", "scale", scaleOptions, 360, -132, 276)
-
-local macroCard = card(pages[3], "METAENGINE MACROS", -4, 86)
-local macroHint = macroCard:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-macroHint:SetPoint("TOPLEFT", 18, -42)
-macroHint:SetWidth(500)
-macroHint:SetJustifyH("LEFT")
-macroHint:SetText("GGL clicks ExtraIcon ST. PLACE the NextCast macro so the press hits the right unit. TargetColor at 163,0 (Action) and 737,-12 (ExtraIcon) both paint the heal unit.")
-local createAll = skinButton(macroCard, 100, 22, "CREATE ALL")
-createAll:SetPoint("TOPRIGHT", -16, -48)
-createAll:SetScript("OnClick", function()
-    if InCombatLockdown and InCombatLockdown() then
-        print("|cffff5050NextCast|r: leave combat to write macros.")
-        return
-    end
-    local made, total = RH.EnsureAllMacros()
-    print("|cffc8ccd4NextCast|r: " .. tostring(made) .. "/" .. tostring(total) .. " macros written. PLACE ON BAR so GGL presses them.")
-    if RH.RefreshMacroDashboard then
-        RH.RefreshMacroDashboard()
-    end
-end)
-local placeAll = skinButton(macroCard, 118, 22, "PLACE ON BAR")
-placeAll:SetPoint("RIGHT", createAll, "LEFT", -6, 0)
-placeAll:SetScript("OnClick", function()
-    if InCombatLockdown and InCombatLockdown() then
-        print("|cffff5050NextCast|r: leave combat to place macros.")
-        return
-    end
-    local placed, total = RH.PlaceAllMacros()
-    print("|cffc8ccd4NextCast|r: " .. tostring(placed) .. "/" .. tostring(total) .. " macros on the scanned bar. Click UNIT to change @player / @party1 / smart.")
-    if RH.RefreshMacroDashboard then
-        RH.RefreshMacroDashboard()
-    end
-end)
-local macroListCard = card(pages[3], "ASSIGN TO SCANNED BAR", -98, 188)
-local colMacro = macroListCard:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-colMacro:SetPoint("TOPLEFT", 18, -38)
-colMacro:SetText("MACRO")
-local colSpell = macroListCard:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-colSpell:SetPoint("TOPLEFT", 132, -38)
-colSpell:SetText("SPELL")
-local colUnit = macroListCard:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-colUnit:SetPoint("TOPLEFT", 292, -38)
-colUnit:SetText("UNIT")
-local colBar = macroListCard:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-colBar:SetPoint("TOPLEFT", 390, -38)
-colBar:SetText("BAR")
-local macroRows = {}
-for i = 1, 8 do
-    local row = CreateFrame("Frame", nil, macroListCard)
-    row:SetSize(640, 16)
-    row:SetPoint("TOPLEFT", 18, -54 - (i - 1) * 16)
-    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", 0, 0)
-    row.name:SetWidth(110)
-    row.name:SetJustifyH("LEFT")
-    row.spell = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.spell:SetPoint("LEFT", 114, 0)
-    row.spell:SetWidth(156)
-    row.spell:SetJustifyH("LEFT")
-    row.unitBtn = skinButton(row, 88, 14, "smart")
-    row.unitBtn:SetPoint("LEFT", 274, 0)
-    row.status = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.status:SetPoint("LEFT", 372, 0)
-    row.status:SetWidth(86)
-    row.status:SetJustifyH("LEFT")
-    row.place = skinButton(row, 56, 14, "PLACE")
-    row.place:SetPoint("RIGHT", -76, 0)
-    row.copy = skinButton(row, 70, 14, "COPY")
-    row.copy:SetPoint("RIGHT", 0, 0)
-    macroRows[i] = row
-end
-function RH.RefreshMacroDashboard()
-    local list = RH.MacroCatalog and RH.MacroCatalog() or {}
-    for i, row in ipairs(macroRows) do
-        local e = list[i]
-        row.entry = e
-        if e then
-            row.name:SetText(e.name)
-            row.spell:SetText(e.spell)
-            local unit = e.unit or (RH.GetMacroUnit and RH.GetMacroUnit(e.name, e.kind)) or "smart"
-            row.unitBtn.text:SetText(RH.MacroUnitLabel and RH.MacroUnitLabel(e.kind, unit) or unit)
-            local onBar = RH.FindMacroActionSlot and RH.FindMacroActionSlot(e.name)
-            local have = RH.MacroExists and RH.MacroExists(e.name)
-            if onBar then
-                row.status:SetText("BAR " .. tostring(onBar))
-                row.status:SetTextColor(0.45, 0.86, 0.58)
-            elseif have then
-                row.status:SetText("READY")
-                row.status:SetTextColor(0.86, 0.72, 0.38)
-            else
-                row.status:SetText("MISSING")
-                row.status:SetTextColor(0.72, 0.40, 0.40)
-            end
-            row.unitBtn:SetScript("OnClick", function()
-                if not RH.CycleMacroUnit then
-                    return
-                end
-                local nxt = RH.CycleMacroUnit(e.name, e.kind)
-                row.unitBtn.text:SetText(RH.MacroUnitLabel(e.kind, nxt))
-                if RH.EnsureMacro then
-                    RH.EnsureMacro(e.name, e.spell, e.kind)
-                end
-            end)
-            row.place:SetScript("OnClick", function()
-                if InCombatLockdown and InCombatLockdown() then
-                    print("|cffff5050NextCast|r: leave combat to place macros.")
-                    return
-                end
-                RH.EnsureMacro(e.name, e.spell, e.kind)
-                local ok, slot = RH.PlaceMacroOnBar(e.name, e.spell)
-                if ok then
-                    print("|cffc8ccd4NextCast|r: " .. e.name .. " on bar slot " .. tostring(slot))
-                else
-                    print("|cffff5050NextCast|r: could not place " .. e.name .. " (" .. tostring(slot) .. ")")
-                end
-                RH.RefreshMacroDashboard()
-            end)
-            row.copy:SetScript("OnClick", function()
-                if not e.body then
-                    return
-                end
-                if ChatFrame1EditBox then
-                    ChatFrame1EditBox:Show()
-                    ChatFrame1EditBox:SetText(e.body:gsub("\n", " | "))
-                    ChatFrame1EditBox:HighlightText()
-                end
-                print("|cffc8ccd4NextCast|r " .. e.name .. ":\n" .. e.body)
-            end)
-            row:Show()
-        else
-            row:Hide()
-        end
-    end
-end
 
 local abilitiesScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameTemplate")
 abilitiesScroll:SetPoint("TOPLEFT", 0, 0)
@@ -821,7 +675,7 @@ function RH.RefreshDashboard()
         RH.IconFrame:EnableMouse(not d.locked)
         RH.IconFrame:SetScale(d.scale or 1)
     end
-    if tabPageOrder[selected] == 2 then
+    if selected == 2 then
         RH.RefreshClassDashboard()
     end
 end

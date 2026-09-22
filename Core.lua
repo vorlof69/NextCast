@@ -859,13 +859,6 @@ SlashCmdList.NEXTCAST = function(msg)
         wipe(RH.debugLog)
         print("|cffc8ccd4NextCast|r: debug log cleared")
         return
-    elseif c == "macros" or c == "macro" then
-        if RH.OpenMacroTab then
-            RH.OpenMacroTab()
-        elseif RH.ToggleMenu then
-            RH.ToggleMenu()
-        end
-        return
     elseif c == "ggl" or c == "shown" then
         if RH.GGLCalibrate then
             RH.GGLCalibrate(not RH.gglCalibrating)
@@ -886,7 +879,7 @@ SlashCmdList.NEXTCAST = function(msg)
         end
         return
     else
-        print("|cffc8ccd4NextCast|r: /nc menu, macros, cd, aoe, kick, burst, queue <spell>, ggl, reset, log")
+        print("|cffc8ccd4NextCast|r: /nc menu, cd, aoe, kick, burst, queue <spell>, ggl, reset, log")
         return
     end
     local enabled = (c == "cd" and RH.CDs) or (c == "aoe" and RH.AoE) or (c == "kick" and RH.Interrupts)

@@ -1,35 +1,24 @@
-NextCast 6.0.0 — WoW Forever 1–30
+NextCast 6.1.0 — WoW Forever 1–30
 =================================
 
-Standalone. No TellMeWhen. No Action. No license.
+Standalone. No TellMeWhen. No Action. No macros.
 
 Install
   1. Extract NextCast into Interface/AddOns
   2. Enable at character select
-  3. /nc  →  Macros  →  CREATE ALL  →  PLACE ON BAR
+  3. /nc
 
 Healing
-  GGLoader clicks ExtraIcon ST and presses that bar key.
-  Put the NextCast macro on that slot so the press is
-  [@mouseover][@target,help][@player], not the enemy.
+  TargetColor paints the ally. NextCast snaps them onto target
+  so GGLoader's press of the raw spell lands. Then TargetLastEnemy.
 
-  TargetColor is painted twice:
-    ExtraIcon child at 737,-12   (Griph reader)
-    UIParent TOPLEFT 163,0       (Action reader, global TargetColor)
-
-  MotW / Thorns macros: /cancelform then [@player].
-  The addon paints the icon in Bear; it does not dump form.
-
-Buffs (tank MotW)
-  Combat: unknown aura = already up (do not dump Bear).
-  Out of combat: unknown = missing, recast once, latch 5 min.
+  MotW / heals do not fire in Bear or Cat. Stay in form.
 
 Overview
-  Specialization only. Role comes from talents and form.
+  Specialization + switches. Abilities tab to turn a spell off.
 
 Commands
   /nc            dashboard
-  /nc macros     MetaEngine tab
   /nc cd         cooldowns
   /nc aoe        auto / single / aoe
   /nc kick       interrupts

@@ -224,11 +224,4 @@ login:SetScript("OnEvent", function()
     RH.RestoreFramePosition(f, "position")
     f:SetScale(d.scale or 1)
     f:EnableMouse(not d.locked)
-    if RH.EnsureFriendlyMacros then
-        RH.EnsureFriendlyMacros()
-    end
-    if not d.macroPlaceHint then
-        d.macroPlaceHint = true
-        print("|cffc8ccd4NextCast|r: /nc → Macros → CREATE ALL → PLACE ON BAR so GGLoader heals and MotW land.")
-    end
 end)

@@ -803,6 +803,7 @@ end
 
 -- GGLoader only presses the scanned bind. A heal/buff with an enemy targeted
 -- fails. Snap the friendly unit onto target for ~0.8s, then TargetLastEnemy.
+-- No macros — Action HealingEngine path: TargetColor + retarget.
 function RH.SnapHealTarget(unit)
     if not unit or unit == "group" then
         return
@@ -849,10 +850,6 @@ function RH.RestoreAfterHeal(force)
     HL.State.healSnapAt = nil
     pcall(TargetLastEnemy)
 end
-
--- Friendly macros live in Modules/Macros.lua (MetaEngine). Helpers used
--- to auto-PlaceAction on login; Classic needs a hardware click for that,
--- so PLACE ON BAR is a dashboard button now.
 
 -- Self buff / aura / aspect / armor.
 -- Visible true  → skip.

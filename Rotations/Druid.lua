@@ -232,12 +232,6 @@ RubimRH.Rotation.SetAPL(11, function()
     end
 
     local inCombat = P:AffectingCombat()
-    if inCombat then
-        HeroLib.State.druidOOCAt = nil
-    else
-        HeroLib.State.druidOOCAt = HeroLib.State.druidOOCAt or GetTime()
-    end
-    local oocSettled = HeroLib.State.druidOOCAt and (GetTime() - HeroLib.State.druidOOCAt) >= 1.2
 
     -- Never recast Bear/Cat while a shift is in flight — second press dumps the form.
     if RH.ShiftPending() then
@@ -268,29 +262,11 @@ RubimRH.Rotation.SetAPL(11, function()
         return strict == true
     end
 
-    -- MotW cannot be cast in Bear. GGLoader presses the NC MotW macro
-    -- (/cancelform then [@player]) so we only PAINT the icon — we do not
-    -- toggle Bear ourselves. After it lands, shift back.
-    -- Tank OOC: unknown aura (Forever secrets in form) counts as missing.
-    if
-        db.maintainBuffs ~= false
-        and not inCombat
-        and oocSettled
-        and not markUp(false)
-        and S.Mark:IsAvailable()
-        and RH.Ready(S.Mark)
-    then
-        if shapeshifted then
-            HeroLib.State.druidReturnToForm = cat and S.Cat or S.Bear
-        end
-        RH.healTarget = "player"
-        RH.NoteBuff("player", "Mark of the Wild", 300)
-        return S.Mark:Cast()
-    end
-
+    -- MotW / Thorns / heals cannot land in Bear or Cat. Stay in form.
+    -- Buff only while humanoid, out of combat.
     if db.maintainBuffs ~= false and not shapeshifted then
         if not markUp(inCombat) then
-            local unit = HeroLib.State.druidReturnToForm and "player" or RH.FindMissingBuff("Mark of the Wild")
+            local unit = RH.FindMissingBuff("Mark of the Wild")
             if unit then
                 local cast = RH.CastAllyBuff(S.Mark, unit, "Mark of the Wild", 300)
                 if cast then
@@ -312,15 +288,6 @@ RubimRH.Rotation.SetAPL(11, function()
         end
     end
     RH.healTarget = nil
-
-    if HeroLib.State.druidReturnToForm and not shapeshifted and markUp() then
-        local formSpell = HeroLib.State.druidReturnToForm
-        HeroLib.State.druidReturnToForm = nil
-        if formSpell and formSpell:IsAvailable() and RH.Ready(formSpell) then
-            RH.NoteShift("enter", formSpell)
-            return formSpell:Cast()
-        end
-    end
 
     if not RH.ValidTarget() then
         return nil
