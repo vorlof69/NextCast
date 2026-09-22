@@ -1,4 +1,4 @@
-# NextCast 5.9.0
+# NextCast 5.9.1
 
 All-class recommendation engine for **WoW Forever 1–30**. Griph ExtraIcon / GGLoader protocol.
 

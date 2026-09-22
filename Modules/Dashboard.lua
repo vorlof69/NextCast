@@ -21,7 +21,7 @@ end
 
 local frame = CreateFrame("Frame", "NextCastDashboard", UIParent, "BackdropTemplate")
 RH.MenuFrame = frame
-frame:SetSize(780, 540)
+frame:SetSize(720, 428)
 frame:SetPoint("CENTER")
 frame:SetFrameStrata("DIALOG")
 frame:SetClampedToScreen(true)
@@ -137,8 +137,8 @@ local function SelectTab(index)
     end
 end
 for i, label in ipairs(labels) do
-    local b = skinButton(tabBar, 366, 28, label)
-    b:SetPoint("LEFT", (i - 1) * 372, 0)
+    local b = skinButton(tabBar, 340, 28, label)
+    b:SetPoint("LEFT", (i - 1) * 348, 0)
     b.line = b:CreateTexture(nil, "OVERLAY")
     b.line:SetTexture(WHITE)
     b.line:SetHeight(2)
@@ -218,32 +218,29 @@ local openDropdown
 local function dropdown(parent, label, key, options, x, y, w, onSelect)
     local caption = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     caption:SetPoint("TOPLEFT", x, y)
-    caption:SetText(label)
+    caption:SetText(label or "")
+    if label == "" or not label then
+        caption:Hide()
+    end
     local values, display = {}, {}
     for i, option in ipairs(options) do
         values[i] = option[1]
         display[option[1]] = option[2]
     end
-    local b = skinButton(parent, w, 30, "")
-    b:SetPoint("TOPLEFT", x, y - 18)
+    local b = skinButton(parent, w, 28, "")
+    b:SetPoint("TOPLEFT", x, (label == "" or not label) and y or (y - 16))
     b.key = key
     b.values = values
     b.display = display
     b.text:ClearAllPoints()
     b.text:SetPoint("LEFT", 12, 0)
-    b.text:SetPoint("RIGHT", -28, 0)
+    b.text:SetPoint("RIGHT", -26, 0)
     b.text:SetJustifyH("LEFT")
-    local arrow = b:CreateTexture(nil, "OVERLAY")
-    arrow:SetTexture(WHITE)
-    arrow:SetSize(8, 1)
-    arrow:SetPoint("RIGHT", -12, 2)
-    arrow:SetColorTexture(0.62, 0.63, 0.64, 1)
-    local arrow2 = b:CreateTexture(nil, "OVERLAY")
-    arrow2:SetTexture(WHITE)
-    arrow2:SetSize(8, 1)
-    arrow2:SetPoint("RIGHT", -12, -2)
-    arrow2:SetColorTexture(0.62, 0.63, 0.64, 0.55)
-    b.arrow = arrow
+    local chevron = b:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    chevron:SetPoint("RIGHT", -10, 0)
+    chevron:SetText("v")
+    chevron:SetTextColor(0.50, 0.52, 0.55)
+    b.chevron = chevron
     local list = CreateFrame("Frame", nil, b, "BackdropTemplate")
     list:SetPoint("TOPLEFT", b, "BOTTOMLEFT", 0, -2)
     list:SetSize(w, #options * 27 + 8)
@@ -305,17 +302,7 @@ local function dropdown(parent, label, key, options, x, y, w, onSelect)
     return b
 end
 local generalControls = {}
-local overviewScroll = CreateFrame("ScrollFrame", nil, pages[1], "UIPanelScrollFrameTemplate")
-overviewScroll:SetPoint("TOPLEFT", 0, 0)
-overviewScroll:SetPoint("BOTTOMRIGHT", -26, 0)
-local overviewContent = CreateFrame("Frame", nil, overviewScroll)
-overviewContent:SetSize(726, 390)
-overviewScroll:SetScrollChild(overviewContent)
-overviewScroll:SetScript("OnSizeChanged", function(self, width)
-    overviewContent:SetWidth(width)
-end)
-
-local play = card(overviewContent, "SPECIALIZATION", -4, 108)
+local play = card(pages[1], "SPECIALIZATION", -4, 118)
 local specOptions = {}
 for _, name in ipairs(specs[token] or { "Automatic", "Leveling" }) do
     specOptions[#specOptions + 1] = { name, name }
@@ -326,40 +313,44 @@ generalControls[#generalControls + 1] = dropdown(
     "spec",
     specOptions,
     18,
-    -46,
-    690,
+    -42,
+    660,
     function(value)
         RH.SetSpec(value)
     end
 )
 local engineReadout = play:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-engineReadout:SetPoint("TOPLEFT", 18, -88)
-engineReadout:SetWidth(690)
+engineReadout:SetPoint("TOPLEFT", 18, -96)
+engineReadout:SetWidth(660)
 engineReadout:SetJustifyH("LEFT")
-engineReadout:SetTextColor(0.62, 0.66, 0.72)
+engineReadout:SetTextColor(0.58, 0.62, 0.68)
 
-local switches = card(overviewContent, "SWITCHES", -124, 196)
+local switches = card(pages[1], "SWITCHES", -130, 168)
 generalControls[#generalControls + 1] =
     toggle(switches, "Cooldowns", "cooldowns", 20, -48, "Racials and class cooldowns when Burst is on.")
 generalControls[#generalControls + 1] =
-    toggle(switches, "Interrupts", "interrupts", 382, -48, "Kick when a hostile cast is readable.")
+    toggle(switches, "Interrupts", "interrupts", 360, -48, "Kick when a hostile cast is readable.")
 generalControls[#generalControls + 1] = toggle(
     switches,
     "Healing",
     "healing",
     20,
-    -92,
+    -86,
     "On = role-aware heals. Healers full kit, tanks self-sustain, DPS emergency only."
 )
 generalControls[#generalControls + 1] =
-    toggle(switches, "Defensives", "defensives", 382, -92, "Personal survival at low health.")
+    toggle(switches, "Defensives", "defensives", 360, -86, "Personal survival at low health.")
 generalControls[#generalControls + 1] =
-    toggle(switches, "Lock icon", "locked", 20, -136, "Prevent dragging the recommendation icon.")
+    toggle(switches, "Lock icon", "locked", 20, -124, "Prevent dragging the recommendation icon.")
 local scaleOptions = {}
 for _, value in ipairs({ 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2 }) do
     scaleOptions[#scaleOptions + 1] = { value, tostring(math.floor(value * 100 + 0.5)) .. "%" }
 end
-generalControls[#generalControls + 1] = dropdown(switches, "ICON SCALE", "scale", scaleOptions, 382, -128, 330)
+local scaleCaption = switches:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+scaleCaption:SetPoint("TOPLEFT", 360, -118)
+scaleCaption:SetText("ICON SCALE")
+scaleCaption:SetTextColor(0.52, 0.54, 0.58)
+generalControls[#generalControls + 1] = dropdown(switches, "", "scale", scaleOptions, 360, -132, 276)
 
 local abilitiesScroll = CreateFrame("ScrollFrame", nil, pages[2], "UIPanelScrollFrameTemplate")
 abilitiesScroll:SetPoint("TOPLEFT", 0, 0)
@@ -719,7 +710,7 @@ function RH.ToggleMenu()
 end
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 14, 10)
-footer:SetText("NEXTCAST  5.9.0")
+footer:SetText("NEXTCAST  5.9.1")
 footer:SetTextColor(0.38, 0.42, 0.49)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -14, 10)
