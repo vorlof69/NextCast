@@ -128,11 +128,11 @@ local function panelButton(parent, w, h, label)
     end
     return skinButton(parent, w, h, label)
 end
-local active = panelButton(frame, 48, 20, "ON")
+local active = skinButton(frame, 54, 20, "ON")
 active:SetPoint("RIGHT", close, "LEFT", -2, -1)
-local aoe = panelButton(frame, 48, 20, "AUTO")
+local aoe = skinButton(frame, 54, 20, "AUTO")
 aoe:SetPoint("RIGHT", active, "LEFT", -3, 0)
-local cds = panelButton(frame, 48, 20, "CDS")
+local cds = skinButton(frame, 54, 20, "CDS")
 cds:SetPoint("RIGHT", aoe, "LEFT", -3, 0)
 
 local pages = {}
@@ -947,7 +947,7 @@ frame:SetScript("OnHide", function()
 end)
 local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footer:SetPoint("BOTTOMLEFT", 22, 16)
-footer:SetText("6.4.6")
+footer:SetText("6.4.7")
 footer:SetTextColor(0.72, 0.62, 0.32)
 local footerRight = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 footerRight:SetPoint("BOTTOMRIGHT", -22, 16)

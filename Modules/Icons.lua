@@ -5,7 +5,7 @@ local cc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class] or { r = 0.78, g = 
 
 local f = CreateFrame("Frame", "NextCastIcon", UIParent, "BackdropTemplate")
 RH.IconFrame = f
-f:SetSize(76, 122)
+f:SetSize(84, 124)
 f:SetPoint("CENTER")
 f:SetMovable(true)
 f:EnableMouse(true)
@@ -22,66 +22,48 @@ f:SetBackdrop({
 f:SetBackdropColor(0, 0, 0, 0.92)
 f:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
 
-local function panelBtn(label, x)
-    local ok, b = pcall(function()
-        local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        btn:SetSize(31, 18)
-        btn:SetPoint("TOPLEFT", 6 + x, -6)
-        btn:SetText(label)
-        btn.text = btn:GetFontString()
-        return btn
-    end)
-    if ok and b then
-        return b
-    end
-    b = CreateFrame("Button", nil, f, "BackdropTemplate")
-    b:SetSize(31, 18)
-    b:SetPoint("TOPLEFT", 6 + x, -6)
+local function railBtn(label)
+    local b = CreateFrame("Button", nil, f, "BackdropTemplate")
+    b:SetHeight(16)
     b:SetBackdrop({
         bgFile = WHITE,
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
         tile = true,
         tileSize = 8,
-        edgeSize = 10,
+        edgeSize = 8,
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
-    b:SetBackdropColor(0, 0, 0, 0.55)
+    b:SetBackdropColor(0.08, 0.06, 0.02, 0.92)
     b:SetBackdropBorderColor(0.85, 0.68, 0.22, 1)
     b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    b.text:SetPoint("CENTER")
+    b.text:SetPoint("CENTER", 0, 0)
     b.text:SetText(label)
+    b.text:SetTextColor(1, 0.82, 0)
     return b
 end
-local modeToggle = panelBtn("AUTO", 0)
-local cdToggle = panelBtn("CDS", 33)
+local modeToggle = railBtn("AUTO")
+modeToggle:SetPoint("TOPLEFT", 6, -6)
+modeToggle:SetPoint("TOPRIGHT", f, "TOP", -1, -6)
+local cdToggle = railBtn("CDS")
+cdToggle:SetPoint("TOPRIGHT", -6, -6)
+cdToggle:SetPoint("TOPLEFT", f, "TOP", 1, -6)
 
-local function setBtnText(btn, text)
-    if btn.SetText then
-        btn:SetText(text)
-    end
-    if btn.text then
-        btn.text:SetText(text)
+local function paintRail(btn, on)
+    if on then
+        btn:SetBackdropColor(0.38, 0.28, 0.08, 1)
+        btn.text:SetTextColor(1, 0.92, 0.45)
+    else
+        btn:SetBackdropColor(0.08, 0.06, 0.02, 0.92)
+        btn.text:SetTextColor(0.82, 0.68, 0.32)
     end
 end
 
 local function RefreshMiniToggles()
     local d = RH.EnsureDB()
     local mode = d.mode or "auto"
-    setBtnText(modeToggle, mode == "single" and "ST" or (mode == "aoe" and "AOE" or "AUTO"))
-    if modeToggle.LockHighlight then
-        if mode == "aoe" then
-            modeToggle:LockHighlight()
-        else
-            modeToggle:UnlockHighlight()
-        end
-    end
-    if cdToggle.LockHighlight then
-        if d.cooldowns ~= false then
-            cdToggle:LockHighlight()
-        else
-            cdToggle:UnlockHighlight()
-        end
-    end
+    modeToggle.text:SetText(mode == "single" and "ST" or (mode == "aoe" and "AOE" or "AUTO"))
+    paintRail(modeToggle, mode == "aoe")
+    paintRail(cdToggle, d.cooldowns ~= false)
 end
 RH.RefreshMiniToggles = RefreshMiniToggles
 
@@ -99,8 +81,8 @@ cdToggle:SetScript("OnClick", function()
 end)
 
 local well = CreateFrame("Frame", nil, f)
-well:SetSize(52, 52)
-well:SetPoint("TOP", 0, -28)
+well:SetSize(56, 56)
+well:SetPoint("TOP", 0, -26)
 
 local icon = well:CreateTexture(nil, "ARTWORK")
 icon:SetAllPoints()
